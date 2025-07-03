@@ -22,6 +22,82 @@ MonoBehaviour:
     m_Localized: Alpha Instinct Royale
     m_Metadata:
       m_Items: []
+  - m_Id: 1129490309120
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1375192637440
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1411662110720
+    m_Localized: Debug
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1431882850304
+    m_Localized: Quit Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1746266906624
+    m_Localized: Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1789774422016
+    m_Localized: Video
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1899551940608
+    m_Localized: Gameplay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1935148998656
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1969747812352
+    m_Localized: Misc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2105613901824
+    m_Localized: Master Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167970619392
+    m_Localized: Music Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2218482622464
+    m_Localized: SFX Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2264045346816
+    m_Localized: Voice Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2320727171072
+    m_Localized: Apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2454286393344
+    m_Localized: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2492613943296
+    m_Localized: Screen Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2552726708224
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2611845423104
+    m_Localized: Borderless Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2708440244224
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

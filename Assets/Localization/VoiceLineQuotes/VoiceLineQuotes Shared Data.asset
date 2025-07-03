@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TableCollectionName: VoiceLineQuotes
   m_TableCollectionNameGuidString: 6222496540fd6d946919f17a5ff816d8
-  m_Entries: []
+  m_Entries:
+  - m_Id: 9776731676672
+    m_Key: Summon_Eagle
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
