@@ -107,23 +107,6 @@ public class PauseMenuController : MonoBehaviour
             new Submenu("debug", "Debug",
                 new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)
             ),
-            new Submenu("test1", "test1",
-                new Submenu("test2", "test2",
-                    new LeafMenuItem("test2-match", "Enter matchmaking", HandleAttemptMatchmaking)
-                ),
-                new Submenu("test3", "test3",
-                    new Submenu("test5", "test5",
-                        new Submenu("test6", "test6",
-                            new Submenu("test7", "test7",
-                                new LeafMenuItem("test7-match", "Enter matchmaking", HandleAttemptMatchmaking)
-                            )
-                        )
-                    )
-                ),
-                new Submenu("test4", "test4",
-                    new LeafMenuItem("test4-match", "Enter matchmaking", HandleAttemptMatchmaking)
-                )
-            ),
             new LeafMenuItem("quit", "Quit Game", HandleQuit)
         };
 
