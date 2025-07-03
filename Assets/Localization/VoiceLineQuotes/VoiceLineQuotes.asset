@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: VoiceLineQuotes
+  m_EditorClassIdentifier: 
+  m_SharedTableData: {fileID: 11400000, guid: 6222496540fd6d946919f17a5ff816d8, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: ba7d8e373a518b8438770e4eba1bf435, type: 2}
+  - {fileID: 11400000, guid: dcb82dd7a614e114682906230d17369a, type: 2}
+  - {fileID: 11400000, guid: 4915e15a08344904ebe4b05cbabbcc8a, type: 2}
+  - {fileID: 11400000, guid: d2aea8f95b49c214c925c2e9d1affa68, type: 2}
+  m_Extensions: []
+  m_Group: String Table
+  references:
+    version: 2
+    RefIds: []
