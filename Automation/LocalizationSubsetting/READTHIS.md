@@ -1,15 +1,94 @@
 # Localization Subsetting
-### AKA: Shrinking the chinese/japanese fonts so we don't ship 100+ megabytes of unused glyphs.
+### AKA: Shrinking the Chinese, Japanese, and Korean fonts so we don't ship 100+ MB of unused glyphs.
 
-The Localization Subsetting automation is intended to build subsets of the fonts that are used
-within the game.
+This automation workflow is designed to generate subsetted font files based on the characters actually used in localized text. The goal is to significantly reduce file sizes for large fonts like Noto Sans JP, KR, and TC.
 
-First you must run a custom tool in the Unity Editor under "/Localization/Export Text for Font Subsetting".
-This will produce a folder at "/Automation/LocalizationSubsetting/FontSubsetText" which contains numerous text
-files of all the localized texts within the defined Localization Tables.
+---
 
-**NOTE** If new Localization Tables are created, they must be added in the tool at '/Assets/_Project/Tools/LocalizationFontExtractor.cs'.
+## 🔧 Step 1 — Export Font Usage From Unity
 
-### Once the 'FontSubsetText' folder is populated with localized txt files...
-The subsetting can be initiated by running the 'run_localization_chain.sh' script, which will trigger the
-'fetch_fonts.sh' script followed by the 'subset_fonts.sh' script in a sequence.
+In the Unity Editor, navigate to:
+
+```
+/Localization/Export Text for Font Subsetting
+```
+
+This tool scans all defined `LocalizedStringTable` assets and outputs `.txt` files containing the combined set of characters used per locale. These files are written to:
+
+```
+/Automation/LocalizationSubsetting/FontSubsetText/
+```
+
+Each output file is named according to the locale, such as `en_strings.txt`, `ja_strings.txt`, etc.
+
+> 💡 When adding new Localization Tables, be sure to register them in:  
+> `/Assets/_Project/Tools/LocalizationFontExtractor.cs`
+
+---
+
+## 🔡 Step 2 — Prepare Fonts
+
+Original, **static** font files should be placed into:
+
+```
+/Automation/LocalizationSubsetting/OriginalFonts/
+```
+
+These files should be downloaded from the official [Noto Fonts](https://www.google.com/get/noto/) site. The expected font files include:
+
+- `NotoSans-Regular.ttf`
+- `NotoSansJP-Regular.ttf`
+- `NotoSansKR-Regular.ttf`
+- `NotoSansTC-Regular.ttf`
+- `GermaniaOne-Regular.ttf` (if used for stylized headings or titles)
+
+> 📝 These original font files are used exclusively for subsetting and are not included in the final Unity build.
+
+---
+
+## ✂️ Step 3 — Run the Subsetting Script
+
+To generate the minimized font files, execute:
+
+```bash
+bash Automation/LocalizationSubsetting/subset_fonts.sh
+```
+
+This script:
+
+- Uses `FontSubsetText/*.txt` as input character sets
+- Uses `OriginalFonts/*.ttf` as the source fonts
+- Outputs subset `.ttf` files into:
+
+```
+/Automation/LocalizationSubsetting/SubsetFonts/
+```
+
+Subset fonts can then be manually copied into the Unity Assets folder as needed.
+
+> 📄 Logs from the operation are saved in:
+> `/Automation/LocalizationSubsetting/Logs/`
+
+---
+
+## 📌 Notes
+
+- Subsetting is powered by [fontTools](https://github.com/fonttools/fonttools).  
+  Ensure Python is installed, then run `pip install fonttools` once.
+- Subsets are generated per locale based solely on the glyphs found in current localization text.
+- Germania One is optionally subsetted for English use cases like headers or titles.
+
+---
+
+## ✅ Summary
+
+| Folder                                 | Purpose                            |
+|----------------------------------------|------------------------------------|
+| `OriginalFonts/`                       | Source font files for subsetting   |
+| `FontSubsetText/`                      | Text exports from Unity tool       |
+| `SubsetFonts/`                         | Output of subset fonts             |
+| `Logs/`                                | Script execution logs              |
+
+---
+
+With this process in place, the project avoids shipping unnecessary font data and maintains a lean build size 🚀

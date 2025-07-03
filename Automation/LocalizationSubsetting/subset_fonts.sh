@@ -1,57 +1,66 @@
 #!/bin/bash
 
 set -e
-FONT_DIR="./OriginalFonts"
-TEXT_DIR="./FontSubsetText"
-OUT_DIR="./SubsetFonts"
+
+# Get the full path to the script's directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Absolute paths to folders
+FONT_DIR="$SCRIPT_DIR/OriginalFonts"
+TEXT_DIR="$SCRIPT_DIR/FontSubsetText"
+OUT_DIR="$SCRIPT_DIR/SubsetFonts"
+LOG_DIR="$SCRIPT_DIR/Logs"
 mkdir -p "$OUT_DIR"
+mkdir -p "$LOG_DIR"
 
-# Declare font mapping for each locale
+# Create log file
+LOG_FILE="$LOG_DIR/subset_log_$(date +"%Y-%m-%d_%H-%M-%S").log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "📁 Subsetting script started at $(date)"
+echo "📝 Logging to: $LOG_FILE"
+
+# Declare font mapping for each locale (static .ttf fonts only)
 declare -A fonts=(
-  ["en"]="NotoSans-Regular.ttf"
-  ["ja"]="NotoSansJP-Regular.otf"
-  ["ko"]="NotoSansKR-Regular.otf"
-  ["zh-Hant"]="NotoSansTC-Regular.otf"
+  ["en-US"]="NotoSans-Regular.ttf"
+  ["ja"]="NotoSansJP-Regular.ttf"
+  ["ko"]="NotoSansKR-Regular.ttf"
+  ["zh-Hant"]="NotoSansTC-Regular.ttf"
 )
-
-# Extra: include Germania One for English if used for headers or titles
-fonts_germania=("en")
 
 for locale in "${!fonts[@]}"; do
   textFile="$TEXT_DIR/${locale}_strings.txt"
   baseFont="$FONT_DIR/${fonts[$locale]}"
-  outFont="$OUT_DIR/${locale}_Subset.otf"
+  outFont="$OUT_DIR/${locale}_NotoSans_Subset.ttf"
 
   if [[ -f "$textFile" && -f "$baseFont" ]]; then
-    echo "📦 Subsetting ${baseFont} with ${textFile}..."
+    echo "📦 Subsetting $baseFont → $outFont with $textFile"
 
-    pyftsubset "$baseFont" \
+    python -m fontTools.subset "$baseFont" \
       --output-file="$outFont" \
       --text-file="$textFile" \
       --layout-features='*' \
       --glyph-names --symbol-cmap --legacy-cmap --notdef-outline --recommended-glyphs
 
-    echo "✅ Created $outFont"
+    echo "✅ Created: $outFont"
   else
     echo "⚠️ Missing font or text file for $locale"
   fi
 done
 
-# Optional: Subset Germania One for English too
-if [[ " ${fonts_germania[*]} " =~ " en " ]]; then
-  baseFont="$FONT_DIR/GermaniaOne-Regular.ttf"
-  textFile="$TEXT_DIR/en_strings.txt"
-  outFont="$OUT_DIR/en_GermaniaSubset.otf"
+# Subset GermaniaOne-Regular as a decorative font for English
+GERMANIA_FONT="$FONT_DIR/GermaniaOne-Regular.ttf"
+GERMANIA_OUT="$OUT_DIR/en-US_Germania_Subset.ttf"
+GERMANIA_TEXT="$TEXT_DIR/en-US_strings.txt"
 
-  if [[ -f "$baseFont" && -f "$textFile" ]]; then
-    echo "📦 Subsetting Germania One for English headers..."
+if [[ -f "$GERMANIA_FONT" && -f "$GERMANIA_TEXT" ]]; then
+  echo "📦 Subsetting GermaniaOne-Regular → $GERMANIA_OUT"
 
-    pyftsubset "$baseFont" \
-      --output-file="$outFont" \
-      --text-file="$textFile" \
-      --layout-features='*' \
-      --glyph-names --symbol-cmap --legacy-cmap --notdef-outline --recommended-glyphs
+  python -m fontTools.subset "$GERMANIA_FONT" \
+    --output-file="$GERMANIA_OUT" \
+    --text-file="$GERMANIA_TEXT" \
+    --layout-features='*' \
+    --glyph-names --symbol-cmap --legacy-cmap --notdef-outline --recommended-glyphs
 
-    echo "✅ Created $outFont"
-  fi
+  echo "✅ Created: $GERMANIA_OUT"
 fi

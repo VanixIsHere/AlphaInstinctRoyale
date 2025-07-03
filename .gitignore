@@ -79,6 +79,7 @@ crashlytics-build.properties
 *.psd
 
 # Do not push font subsetting intermediate data (keep the automation scripts)
-/Automation/LocalizationSubsetting/FontSubsetText/
-/Automation/LocalizationSubsetting/OriginalFonts/
-/Automation/LocalizationSubsetting/SubsetFonts/
+/Automation/LocalizationSubsetting/FontSubsetText/*
+/Automation/LocalizationSubsetting/Logs/*
+/Automation/LocalizationSubsetting/OriginalFonts/*
+/Automation/LocalizationSubsetting/SubsetFonts/*
