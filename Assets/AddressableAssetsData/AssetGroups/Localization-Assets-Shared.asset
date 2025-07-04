@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Localization-Assets-Shared
   m_GUID: 1190a8b98595ab24886f35a6ac9b2f95
   m_SerializeEntries:
+  - m_GUID: 47c605d2d319b6348b97a6737c0b1796
+    m_Address: Assets/Localization/FontTable/FontAsset Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6222496540fd6d946919f17a5ff816d8
     m_Address: Assets/Localization/VoiceLineQuotes/VoiceLineQuotes Shared Data.asset
     m_ReadOnly: 1
