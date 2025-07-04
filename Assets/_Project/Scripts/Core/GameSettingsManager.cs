@@ -3,6 +3,7 @@ using GameSettings;
 using System.IO;
 using System;
 using UnityEngine.Rendering;
+using UnityEngine.Localization.Settings;
 
 public class GameSettingsManager : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class GameSettingsManager : MonoBehaviour
     public float MusicVolume { get; private set; }
     public float SFXVolume { get; private set; }
     public float VoiceVolume { get; private set; }
+
+    /* LOCALE OPTIONS */
+    public LanguageSetting Language { get; private set; }
 
     /* GRAPHICS OPTIONS */
     public GraphicsQuality OverallGraphicsQuality { get; private set; }
@@ -48,6 +52,7 @@ public class GameSettingsManager : MonoBehaviour
             musicVolume = MusicVolume,
             sfxVolume = SFXVolume,
             voiceVolume = VoiceVolume,
+            language = Language,
         };
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(SettingsFilePath, json);
@@ -71,6 +76,11 @@ public class GameSettingsManager : MonoBehaviour
                 MusicVolume = data.musicVolume;
                 SFXVolume = data.sfxVolume;
                 VoiceVolume = data.voiceVolume;
+                Language = data.language;
+
+                var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
+                if (locale != null)
+                    LocalizationSettings.SelectedLocale = locale;
             }
             catch (Exception e)
             {
@@ -94,6 +104,11 @@ public class GameSettingsManager : MonoBehaviour
         MusicVolume = 1f;
         SFXVolume = 1f;
         VoiceVolume = 1f;
+        Language = LanguageSetting.English;
+
+        var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
+        if (locale != null)
+            LocalizationSettings.SelectedLocale = locale;
         SaveSettings();
     }
 
@@ -136,6 +151,15 @@ public class GameSettingsManager : MonoBehaviour
     public void SetOverallGraphicsQuality(GraphicsQuality quality)
     {
         OverallGraphicsQuality = quality;
+        SaveSettings();
+    }
+
+    public void SetLanguage(LanguageSetting lang)
+    {
+        Language = lang;
+        var locale = LocalizationSettings.AvailableLocales.GetLocale(lang.ToLocaleCode());
+        if (locale != null)
+            LocalizationSettings.SelectedLocale = locale;
         SaveSettings();
     }
 }

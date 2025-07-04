@@ -101,6 +101,13 @@ public class PauseMenuController : MonoBehaviour
                     new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
                 new GroupContainerMenuItem("misc", "Misc", "",
+                    new DropdownSetting(
+                        "Language",
+                        LanguageSettingExtensions.GetLanguageList(),
+                        LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
+                        val => {
+                            GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val));
+                        }),
                     new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
             ),

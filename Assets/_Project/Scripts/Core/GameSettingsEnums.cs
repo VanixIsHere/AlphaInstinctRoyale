@@ -118,4 +118,61 @@ namespace GameSettings
         High,
         Ultra
     }
+
+    public enum LanguageSetting
+    {
+        English,
+        Japanese,
+        Korean,
+        ChineseTraditional
+    }
+
+    public static class LanguageSettingExtensions
+    {
+        public static string ToLanguageString(this LanguageSetting lang)
+        {
+            return lang switch
+            {
+                LanguageSetting.English => "English",
+                LanguageSetting.Japanese => "Japanese",
+                LanguageSetting.Korean => "Korean",
+                LanguageSetting.ChineseTraditional => "Chinese (Traditional)",
+                _ => "English"
+            };
+        }
+
+        public static string ToLocaleCode(this LanguageSetting lang)
+        {
+            return lang switch
+            {
+                LanguageSetting.English => "en-US",
+                LanguageSetting.Japanese => "ja",
+                LanguageSetting.Korean => "ko",
+                LanguageSetting.ChineseTraditional => "zh-Hant",
+                _ => "en-US"
+            };
+        }
+
+        public static LanguageSetting ToLanguageSetting(string languageString)
+        {
+            return languageString switch
+            {
+                "English" => LanguageSetting.English,
+                "Japanese" => LanguageSetting.Japanese,
+                "Korean" => LanguageSetting.Korean,
+                "Chinese (Traditional)" => LanguageSetting.ChineseTraditional,
+                _ => LanguageSetting.English
+            };
+        }
+
+        public static List<string> GetLanguageList()
+        {
+            List<string> result = new List<string>();
+            foreach (LanguageSetting lang in Enum.GetValues(typeof(LanguageSetting)))
+            {
+                result.Add(lang.ToLanguageString());
+            }
+            return result;
+        }
+    }
 }
