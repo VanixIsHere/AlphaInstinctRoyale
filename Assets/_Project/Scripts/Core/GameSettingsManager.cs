@@ -24,6 +24,7 @@ public class GameSettingsManager : MonoBehaviour
 
     /* LOCALE OPTIONS */
     public LanguageSetting Language { get; private set; }
+    public event Action<LanguageSetting> LanguageChanged;
 
     /* GRAPHICS OPTIONS */
     public GraphicsQuality OverallGraphicsQuality { get; private set; }
@@ -81,6 +82,7 @@ public class GameSettingsManager : MonoBehaviour
                 var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
                 if (locale != null)
                     LocalizationSettings.SelectedLocale = locale;
+                LanguageChanged?.Invoke(Language);
             }
             catch (Exception e)
             {
@@ -109,6 +111,7 @@ public class GameSettingsManager : MonoBehaviour
         var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
         if (locale != null)
             LocalizationSettings.SelectedLocale = locale;
+        LanguageChanged?.Invoke(Language);
         SaveSettings();
     }
 
@@ -160,6 +163,7 @@ public class GameSettingsManager : MonoBehaviour
         var locale = LocalizationSettings.AvailableLocales.GetLocale(lang.ToLocaleCode());
         if (locale != null)
             LocalizationSettings.SelectedLocale = locale;
+        LanguageChanged?.Invoke(lang);
         SaveSettings();
     }
 }

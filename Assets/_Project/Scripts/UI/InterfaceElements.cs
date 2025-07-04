@@ -246,6 +246,8 @@ public class DropdownSetting : ISettingItem
     private readonly string initialValue;
     private readonly System.Action<string> onChanged;
 
+    private DropdownField dropdownField;
+
     public DropdownSetting(string label, List<string> options, string initialValue, System.Action<string> onChanged)
     {
         this.label = label;
@@ -261,15 +263,21 @@ public class DropdownSetting : ISettingItem
         container.style.justifyContent = Justify.SpaceBetween;
 
         var lbl = new Label(label);
-        var dropdown = new DropdownField(options, initialValue);
-        dropdown.RegisterValueChangedCallback(evt => {
+        dropdownField = new DropdownField(options, initialValue);
+        dropdownField.RegisterValueChangedCallback(evt => {
             onChanged?.Invoke(evt.newValue);
             GroupContainerMenuItem.NotifyChange();
         });
 
         container.Add(lbl);
-        container.Add(dropdown);
+        container.Add(dropdownField);
         return container;
+    }
+
+    public void SetValue(string value)
+    {
+        if (dropdownField != null)
+            dropdownField.value = value;
     }
 }
 

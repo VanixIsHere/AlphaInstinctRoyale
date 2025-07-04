@@ -46,6 +46,19 @@ public class PauseMenuController : MonoBehaviour
         openLayers.Add(menuRoot);
         UIUtils.AdjustColumnFlex(menuRoot.parent);
 
+        var languageSetting = new DropdownSetting(
+            "Language",
+            LanguageSettingExtensions.GetLanguageList(),
+            LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
+            val => {
+                GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val));
+            });
+
+        GameSettingsManager.LanguageChanged += lang =>
+        {
+            languageSetting.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+        };
+
         var rootMenu = new List<IMenuItem>
         {
             new LeafMenuItem("resume", "Resume", ResumeGame),
@@ -101,13 +114,7 @@ public class PauseMenuController : MonoBehaviour
                     new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
                 new GroupContainerMenuItem("misc", "Misc", "",
-                    new DropdownSetting(
-                        "Language",
-                        LanguageSettingExtensions.GetLanguageList(),
-                        LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
-                        val => {
-                            GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val));
-                        }),
+                    languageSetting,
                     new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
             ),
