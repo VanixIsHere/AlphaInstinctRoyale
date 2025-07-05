@@ -6,6 +6,7 @@ public class ModalManager : MonoBehaviour
 {
     public VisualTreeAsset modalTemplate;
     private VisualElement root;
+    private VisualElement activeModal;
 
     void Awake()
     {
@@ -14,23 +15,30 @@ public class ModalManager : MonoBehaviour
 
     public void ShowConfirm(string primaryLabel, string secondaryLabel, Action onConfirm, Action onCancel = null, string confirmText = "Confirm", string cancelText = "Cancel")
     {
-        var modal = modalTemplate.CloneTree();
+        if (activeModal != null)
+            return;
 
-        modal.Q<Label>("PrimaryText").text = primaryLabel;
-        modal.Q<Label>("SecondaryText").text = secondaryLabel;
-        var confirmButton = modal.Q<Button>("Confirm");
+        activeModal = modalTemplate.CloneTree();
+
+        activeModal.Q<Label>("PrimaryText").text = primaryLabel;
+        activeModal.Q<Label>("SecondaryText").text = secondaryLabel;
+        var confirmButton = activeModal.Q<Button>("Confirm");
         confirmButton.text = confirmText;
-        confirmButton.clicked += () => {
-            root.Remove(modal);
+        confirmButton.clicked += () =>
+        {
+            root.Remove(activeModal);
+            activeModal = null;
             onConfirm?.Invoke();
         };
-        var cancelButton = modal.Q<Button>("Cancel");
+        var cancelButton = activeModal.Q<Button>("Cancel");
         cancelButton.text = cancelText;
-        cancelButton.clicked += () => {
-            root.Remove(modal);
+        cancelButton.clicked += () =>
+        {
+            root.Remove(activeModal);
+            activeModal = null;
             onCancel?.Invoke();
         };
 
-        root.Add(modal);
+        root.Add(activeModal);
     }
 }
