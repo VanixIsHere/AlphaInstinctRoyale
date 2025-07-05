@@ -20,6 +20,17 @@ public class ModalManager : MonoBehaviour
 
         activeModal = modalTemplate.CloneTree();
 
+        var overlay = activeModal.Q<VisualElement>("WholeScreen");
+        if (overlay != null)
+        {
+            overlay.style.position = Position.Absolute;
+            overlay.style.left = 0;
+            overlay.style.top = 0;
+            overlay.style.right = 0;
+            overlay.style.bottom = 0;
+            overlay.style.zIndex = 1000;
+        }
+
         activeModal.Q<Label>("PrimaryText").text = primaryLabel;
         activeModal.Q<Label>("SecondaryText").text = secondaryLabel;
         var confirmButton = activeModal.Q<Button>("Confirm");

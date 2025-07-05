@@ -225,7 +225,7 @@ public class PauseMenuController : MonoBehaviour
 
         if (openItemIds.Count >= tier - 1 && openItemIds[tier - 2] == item.Id)
         {
-            CloseTier(tier);
+            // Already viewing this section; ignore the request
             return null;
         }
 
