@@ -42,7 +42,7 @@ public class GameSettingsManager : MonoBehaviour
         LoadSettings();
     }
 
-    private void SaveSettings()
+    public void SaveSettings()
     {
         var data = new GameSettingsData
         {
@@ -118,43 +118,36 @@ public class GameSettingsManager : MonoBehaviour
     public void SetScreenResolution(ResolutionSetting res)
     {
         ScreenResolution = res;
-        SaveSettings();
     }
 
     public void SetScreenMode(ScreenModeSetting mode)
     {
         ScreenMode = mode;
-        SaveSettings();
     }
 
     public void SetMasterVolume(float volume)
     {
         MasterVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetMusicVolume(float volume)
     {
         MusicVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetSFXVolume(float volume)
     {
         SFXVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetVoiceVolume(float volume)
     {
         VoiceVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetOverallGraphicsQuality(GraphicsQuality quality)
     {
         OverallGraphicsQuality = quality;
-        SaveSettings();
     }
 
     public void SetLanguage(LanguageSetting lang)
@@ -164,6 +157,5 @@ public class GameSettingsManager : MonoBehaviour
         if (locale != null)
             LocalizationSettings.SelectedLocale = locale;
         LanguageChanged?.Invoke(lang);
-        SaveSettings();
     }
 }

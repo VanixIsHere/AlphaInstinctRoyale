@@ -14,6 +14,8 @@ public interface IMenuItem
 public interface ISettingItem
 {
     VisualElement Build();
+    void Apply();
+    void Discard();
 }
 
 public interface ISettingsPage
@@ -195,12 +197,20 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
 
     public void Apply()
     {
+        foreach (var setting in _settings)
+            setting.Apply();
+
+        PauseMenuController.Instance.GameSettingsManager.SaveSettings();
+
         dirty = false;
         Debug.Log($"Applied settings for {Label}");
     }
 
     public void DiscardChanges()
     {
+        foreach (var setting in _settings)
+            setting.Discard();
+
         dirty = false;
         Debug.Log($"Discarded settings for {Label}");
     }
@@ -209,13 +219,17 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
 public class ToggleSetting : ISettingItem
 {
     private readonly string label;
-    private readonly bool initialValue;
+    private bool initialValue;
+    private bool currentValue;
     private readonly System.Action<bool> onChanged;
+
+    private Toggle toggle;
 
     public ToggleSetting(string label, bool initialValue, System.Action<bool> onChanged)
     {
         this.label = label;
         this.initialValue = initialValue;
+        this.currentValue = initialValue;
         this.onChanged = onChanged;
     }
 
@@ -226,9 +240,10 @@ public class ToggleSetting : ISettingItem
         container.style.justifyContent = Justify.SpaceBetween;
 
         var lbl = new Label(label);
-        var toggle = new Toggle { value = initialValue };
+        toggle = new Toggle { value = initialValue };
 
         toggle.RegisterValueChangedCallback(evt => {
+            currentValue = evt.newValue;
             onChanged?.Invoke(evt.newValue);
             GroupContainerMenuItem.NotifyChange();
         });
@@ -237,12 +252,27 @@ public class ToggleSetting : ISettingItem
         container.Add(toggle);
         return container;
     }
+
+    public void Apply()
+    {
+        initialValue = currentValue;
+        onChanged?.Invoke(currentValue);
+    }
+
+    public void Discard()
+    {
+        currentValue = initialValue;
+        if (toggle != null)
+            toggle.value = initialValue;
+        onChanged?.Invoke(initialValue);
+    }
 }
 
 public class DropdownSetting : ISettingItem
 {
     private readonly string label;
     private readonly List<string> options;
+    private string initialValue;
     private string currentValue;
     private readonly System.Action<string> onChanged;
 
@@ -252,6 +282,7 @@ public class DropdownSetting : ISettingItem
     {
         this.label = label;
         this.options = options;
+        this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
     }
@@ -281,6 +312,20 @@ public class DropdownSetting : ISettingItem
         if (dropdownField != null)
             dropdownField.value = value;
     }
+
+    public void Apply()
+    {
+        initialValue = currentValue;
+        onChanged?.Invoke(currentValue);
+    }
+
+    public void Discard()
+    {
+        currentValue = initialValue;
+        if (dropdownField != null)
+            dropdownField.value = initialValue;
+        onChanged?.Invoke(initialValue);
+    }
 }
 
 public class SliderSetting : ISettingItem
@@ -288,8 +333,11 @@ public class SliderSetting : ISettingItem
     private readonly string label;
     private readonly float min;
     private readonly float max;
-    private readonly float initialValue;
+    private float initialValue;
+    private float currentValue;
     private readonly System.Action<float> onChanged;
+
+    private Slider slider;
 
     public SliderSetting(string label, float min, float max, float initialValue, System.Action<float> onChanged)
     {
@@ -297,6 +345,7 @@ public class SliderSetting : ISettingItem
         this.min = min;
         this.max = max;
         this.initialValue = initialValue;
+        this.currentValue = initialValue;
         this.onChanged = onChanged;
     }
 
@@ -307,8 +356,9 @@ public class SliderSetting : ISettingItem
         container.style.justifyContent = Justify.SpaceBetween;
 
         var lbl = new Label(label);
-        var slider = new Slider(min, max) { value = initialValue };
+        slider = new Slider(min, max) { value = initialValue };
         slider.RegisterValueChangedCallback(evt => {
+            currentValue = evt.newValue;
             onChanged?.Invoke(evt.newValue);
             GroupContainerMenuItem.NotifyChange();
         });
@@ -316,6 +366,20 @@ public class SliderSetting : ISettingItem
         container.Add(lbl);
         container.Add(slider);
         return container;
+    }
+
+    public void Apply()
+    {
+        initialValue = currentValue;
+        onChanged?.Invoke(currentValue);
+    }
+
+    public void Discard()
+    {
+        currentValue = initialValue;
+        if (slider != null)
+            slider.value = initialValue;
+        onChanged?.Invoke(initialValue);
     }
 }
 
