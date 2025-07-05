@@ -28,7 +28,8 @@ public class ModalManager : MonoBehaviour
             overlay.style.top = 0;
             overlay.style.right = 0;
             overlay.style.bottom = 0;
-            overlay.style.zIndex = 1000;
+            // Use USS to control overlay layering; BringToFront adds safety
+            overlay.BringToFront();
         }
 
         activeModal.Q<Label>("PrimaryText").text = primaryLabel;
