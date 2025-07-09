@@ -3,6 +3,7 @@ using GameSettings;
 using System.IO;
 using System;
 using UnityEngine.Rendering;
+using UnityEngine.Localization.Settings;
 
 public class GameSettingsManager : MonoBehaviour
 {
@@ -21,6 +22,10 @@ public class GameSettingsManager : MonoBehaviour
     public float SFXVolume { get; private set; }
     public float VoiceVolume { get; private set; }
 
+    /* LOCALE OPTIONS */
+    public LanguageSetting Language { get; private set; }
+    public event Action<LanguageSetting> LanguageChanged;
+
     /* GRAPHICS OPTIONS */
     public GraphicsQuality OverallGraphicsQuality { get; private set; }
 
@@ -37,7 +42,7 @@ public class GameSettingsManager : MonoBehaviour
         LoadSettings();
     }
 
-    private void SaveSettings()
+    public void SaveSettings()
     {
         var data = new GameSettingsData
         {
@@ -48,6 +53,7 @@ public class GameSettingsManager : MonoBehaviour
             musicVolume = MusicVolume,
             sfxVolume = SFXVolume,
             voiceVolume = VoiceVolume,
+            language = Language,
         };
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(SettingsFilePath, json);
@@ -71,6 +77,12 @@ public class GameSettingsManager : MonoBehaviour
                 MusicVolume = data.musicVolume;
                 SFXVolume = data.sfxVolume;
                 VoiceVolume = data.voiceVolume;
+                Language = data.language;
+
+                var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
+                if (locale != null)
+                    LocalizationSettings.SelectedLocale = locale;
+                LanguageChanged?.Invoke(Language);
             }
             catch (Exception e)
             {
@@ -94,48 +106,56 @@ public class GameSettingsManager : MonoBehaviour
         MusicVolume = 1f;
         SFXVolume = 1f;
         VoiceVolume = 1f;
+        Language = LanguageSetting.English;
+
+        var locale = LocalizationSettings.AvailableLocales.GetLocale(Language.ToLocaleCode());
+        if (locale != null)
+            LocalizationSettings.SelectedLocale = locale;
+        LanguageChanged?.Invoke(Language);
         SaveSettings();
     }
 
     public void SetScreenResolution(ResolutionSetting res)
     {
         ScreenResolution = res;
-        SaveSettings();
     }
 
     public void SetScreenMode(ScreenModeSetting mode)
     {
         ScreenMode = mode;
-        SaveSettings();
     }
 
     public void SetMasterVolume(float volume)
     {
         MasterVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetMusicVolume(float volume)
     {
         MusicVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetSFXVolume(float volume)
     {
         SFXVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetVoiceVolume(float volume)
     {
         VoiceVolume = Mathf.Clamp01(volume);
-        SaveSettings();
     }
 
     public void SetOverallGraphicsQuality(GraphicsQuality quality)
     {
         OverallGraphicsQuality = quality;
-        SaveSettings();
+    }
+
+    public void SetLanguage(LanguageSetting lang)
+    {
+        Language = lang;
+        var locale = LocalizationSettings.AvailableLocales.GetLocale(lang.ToLocaleCode());
+        if (locale != null)
+            LocalizationSettings.SelectedLocale = locale;
+        LanguageChanged?.Invoke(lang);
     }
 }

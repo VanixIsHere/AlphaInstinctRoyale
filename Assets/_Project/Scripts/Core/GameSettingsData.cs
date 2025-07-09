@@ -10,4 +10,5 @@ public class GameSettingsData
     public float musicVolume;
     public float sfxVolume;
     public float voiceVolume;
+    public LanguageSetting language;
 }

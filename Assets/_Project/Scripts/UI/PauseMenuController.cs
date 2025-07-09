@@ -46,6 +46,19 @@ public class PauseMenuController : MonoBehaviour
         openLayers.Add(menuRoot);
         UIUtils.AdjustColumnFlex(menuRoot.parent);
 
+        var languageSetting = new DropdownSetting(
+            "Language",
+            LanguageSettingExtensions.GetLanguageList(),
+            LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
+            val => {
+                GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val));
+            });
+
+        GameSettingsManager.LanguageChanged += lang =>
+        {
+            languageSetting.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+        };
+
         var rootMenu = new List<IMenuItem>
         {
             new LeafMenuItem("resume", "Resume", ResumeGame),
@@ -101,6 +114,7 @@ public class PauseMenuController : MonoBehaviour
                     new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
                 new GroupContainerMenuItem("misc", "Misc", "",
+                    languageSetting,
                     new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
             ),
@@ -138,6 +152,17 @@ public class PauseMenuController : MonoBehaviour
 
     public void TogglePause()
     {
+        if (isPaused && GroupContainerMenuItem.ActivePageHasPending)
+        {
+            GroupContainerMenuItem.ShowUnsavedPrompt(() => TogglePauseInternal());
+            return;
+        }
+
+        TogglePauseInternal();
+    }
+
+    private void TogglePauseInternal()
+    {
         isPaused = !isPaused;
 
         if (rootDoc != null)
@@ -161,6 +186,17 @@ public class PauseMenuController : MonoBehaviour
 
     // Optional resume button hook
     public void ResumeGame()
+    {
+        if (GroupContainerMenuItem.ActivePageHasPending)
+        {
+            GroupContainerMenuItem.ShowUnsavedPrompt(() => ResumeGameInternal());
+            return;
+        }
+
+        ResumeGameInternal();
+    }
+
+    private void ResumeGameInternal()
     {
         isPaused = false;
 
@@ -195,14 +231,22 @@ public class PauseMenuController : MonoBehaviour
 
     private void HandleQuit()
     {
-        modal.ShowConfirm(
-            "Are you sure you want to leave?",
-            "Any unsaved changes will be lost.",
-            Application.Quit,
-            () => Debug.Log("Cancelled Quit"),
-            "Yes",
-            "No"
-        );
+        System.Action showQuit = () =>
+        {
+            modal.ShowConfirm(
+                "Are you sure you want to leave?",
+                "Any unsaved changes will be lost.",
+                Application.Quit,
+                () => Debug.Log("Cancelled Quit"),
+                "Yes",
+                "No"
+            );
+        };
+
+        if (GroupContainerMenuItem.ActivePageHasPending)
+            GroupContainerMenuItem.ShowUnsavedPrompt(showQuit);
+        else
+            showQuit();
     }
 
     public VisualElement TryOpen(IMenuItem item, VisualElement parent, int tier)
@@ -211,7 +255,7 @@ public class PauseMenuController : MonoBehaviour
 
         if (openItemIds.Count >= tier - 1 && openItemIds[tier - 2] == item.Id)
         {
-            CloseTier(tier);
+            // Already viewing this section; ignore the request
             return null;
         }
 
