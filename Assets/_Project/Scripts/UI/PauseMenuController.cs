@@ -152,6 +152,17 @@ public class PauseMenuController : MonoBehaviour
 
     public void TogglePause()
     {
+        if (isPaused && GroupContainerMenuItem.ActivePageHasPending)
+        {
+            GroupContainerMenuItem.ShowUnsavedPrompt(() => TogglePauseInternal());
+            return;
+        }
+
+        TogglePauseInternal();
+    }
+
+    private void TogglePauseInternal()
+    {
         isPaused = !isPaused;
 
         if (rootDoc != null)
@@ -175,6 +186,17 @@ public class PauseMenuController : MonoBehaviour
 
     // Optional resume button hook
     public void ResumeGame()
+    {
+        if (GroupContainerMenuItem.ActivePageHasPending)
+        {
+            GroupContainerMenuItem.ShowUnsavedPrompt(() => ResumeGameInternal());
+            return;
+        }
+
+        ResumeGameInternal();
+    }
+
+    private void ResumeGameInternal()
     {
         isPaused = false;
 
@@ -209,14 +231,22 @@ public class PauseMenuController : MonoBehaviour
 
     private void HandleQuit()
     {
-        modal.ShowConfirm(
-            "Are you sure you want to leave?",
-            "Any unsaved changes will be lost.",
-            Application.Quit,
-            () => Debug.Log("Cancelled Quit"),
-            "Yes",
-            "No"
-        );
+        System.Action showQuit = () =>
+        {
+            modal.ShowConfirm(
+                "Are you sure you want to leave?",
+                "Any unsaved changes will be lost.",
+                Application.Quit,
+                () => Debug.Log("Cancelled Quit"),
+                "Yes",
+                "No"
+            );
+        };
+
+        if (GroupContainerMenuItem.ActivePageHasPending)
+            GroupContainerMenuItem.ShowUnsavedPrompt(showQuit);
+        else
+            showQuit();
     }
 
     public VisualElement TryOpen(IMenuItem item, VisualElement parent, int tier)
