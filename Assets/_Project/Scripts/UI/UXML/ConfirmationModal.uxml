@@ -1,13 +1,11 @@
 <engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/_Project/Scripts/UI/USS/Layouts.uss?fileID=7433441132597879392&amp;guid=b7bf865ee983f6b4bbb5f82f4f755a82&amp;type=3#Layouts" />
-    <engine:GroupBox name="WholeScreen" style="align-items: stretch; justify-content: center; width: 100%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 1000;">
-        <engine:GroupBox name="ModalContainer" style="align-items: center; justify-content: center; align-self: center; align-content: center; background-color: rgba(0, 0, 0, 0.67); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px;">
-            <engine:Label text="PrimaryText" name="PrimaryText" class="primary-label" />
-            <engine:Label text="SecondaryText" name="SecondaryText" class="secondary-label" />
-            <engine:GroupBox name="ConfirmOptions" class="confirm-options" style="flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
-                <engine:Button text="Button" name="Confirm" class="confirm-button" />
-                <engine:Button text="Button" name="Cancel" class="cancel-button" />
-            </engine:GroupBox>
+    <engine:GroupBox name="ModalContainer" style="align-items: center; justify-content: center; align-self: center; align-content: center; background-color: rgba(0, 0, 0, 0.67); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px; position: absolute;">
+        <engine:Label text="PrimaryText" name="PrimaryText" class="primary-label" />
+        <engine:Label text="SecondaryText" name="SecondaryText" class="secondary-label" />
+        <engine:GroupBox name="ConfirmOptions" class="confirm-options" style="flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+            <engine:Button text="Button" name="Confirm" class="confirm-button" />
+            <engine:Button text="Button" name="Cancel" class="cancel-button" />
         </engine:GroupBox>
     </engine:GroupBox>
 </engine:UXML>
