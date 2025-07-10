@@ -79,12 +79,6 @@ public class PauseMenuController : MonoBehaviour
             LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
             val =>
             {
-                if (suppressLanguagePrompt)
-                {
-                    suppressLanguagePrompt = false;
-                    return;
-                }
-
                 var prev = GameSettingsManager.Language;
                 var chosen = LanguageSettingExtensions.ToLanguageSetting(val);
                 if (prev == chosen)
@@ -100,6 +94,7 @@ public class PauseMenuController : MonoBehaviour
                         suppressLanguagePrompt = true;
                         GameSettingsManager.SetLanguage(prev);
                         GroupContainerMenuItem.ClearPendingChanges();
+                        suppressLanguagePrompt = false;
                     });
             });
 
@@ -126,12 +121,6 @@ public class PauseMenuController : MonoBehaviour
                         ResolutionSettingExtensions.ToResolutionString(GameSettingsManager.ScreenResolution),
                         val =>
                         {
-                            if (suppressResolutionPrompt)
-                            {
-                                suppressResolutionPrompt = false;
-                                return;
-                            }
-
                             var prev = GameSettingsManager.ScreenResolution;
                             var chosen = ResolutionSettingExtensions.ToResolutionSetting(val);
                             if (prev == chosen)
@@ -148,6 +137,7 @@ public class PauseMenuController : MonoBehaviour
                                     resolutionSetting?.SetDisplayValue(ResolutionSettingExtensions.ToResolutionString(prev));
                                     GameSettingsManager.SetScreenResolution(prev);
                                     GroupContainerMenuItem.ClearPendingChanges();
+                                    suppressResolutionPrompt = false;
                                 });
                         }),
                     new DropdownSetting(
@@ -199,6 +189,7 @@ public class PauseMenuController : MonoBehaviour
         {
             suppressLanguagePrompt = true;
             languageSetting.SetDisplayValue(LanguageSettingExtensions.ToLanguageString(lang));
+            suppressLanguagePrompt = false;
         }
     }
 
