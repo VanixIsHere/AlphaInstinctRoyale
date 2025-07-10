@@ -36,92 +36,87 @@ public class PauseMenuController : MonoBehaviour
         modal = GetComponent<ModalManager>();
         GroupContainerMenuItem.SetModalManager(modal);
 
-        var menuContainer = InGameMenuContainer.CloneTree();
-        var root = rootDoc.rootVisualElement.Q<VisualElement>("ROOT");
+        BuildMenu();
+        GameSettingsManager.LanguageChanged += OnLanguageChanged;
+    }
 
+    private void OnDestroy()
+    {
+        GameSettingsManager.LanguageChanged -= OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged(LanguageSetting lang)
+    {
+        BuildMenu();
+    }
+
+    private DropdownSetting languageSetting;
+
+    private void BuildMenu()
+    {
+        var root = rootDoc.rootVisualElement.Q<VisualElement>("ROOT");
+        root.Clear();
+
+        var menuContainer = InGameMenuContainer.CloneTree();
         var elementContent = menuContainer.Q<VisualElement>("ui-element-content");
         root.Add(menuContainer);
 
         menuRoot = elementContent;
+        openLayers.Clear();
         openLayers.Add(menuRoot);
         UIUtils.AdjustColumnFlex(menuRoot.parent);
 
-        var languageSetting = new DropdownSetting(
+        if (languageSetting != null)
+            GameSettingsManager.LanguageChanged -= UpdateLanguageDropdown;
+
+        languageSetting = new DropdownSetting(
             "Language",
             LanguageSettingExtensions.GetLanguageList(),
             LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
-            val => {
-                GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val));
-            });
+            val => { GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val)); });
 
-        GameSettingsManager.LanguageChanged += lang =>
-        {
-            languageSetting.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
-        };
+        GameSettingsManager.LanguageChanged += UpdateLanguageDropdown;
 
         var rootMenu = new List<IMenuItem>
         {
-            new LeafMenuItem("resume", "Resume", ResumeGame),
-            new Submenu("settings", "Settings", "tier1-button",
-                new GroupContainerMenuItem("audio", "Audio", "",
-                    new SliderSetting("Master Volume", 0f, 100f, GameSettingsManager.MasterVolume*100,
-                        v =>
-                        {
-                            Debug.Log("Master Volume: " + v + " " + v/100);
-                            GameSettingsManager.SetMasterVolume(v/100);
-                        }),
-                    new SliderSetting("Music Volume", 0f, 100f, GameSettingsManager.MusicVolume*100,
-                        v =>
-                        {
-                            Debug.Log("Music Volume: " + v + " " + v/100);
-                            GameSettingsManager.SetMusicVolume(v/100);
-                        }),
-                    new SliderSetting("SFX Volume", 0f, 100f, GameSettingsManager.SFXVolume*100,
-                        v =>
-                        {
-                            Debug.Log("SFX Volume: " + v + " " + v/100);
-                            GameSettingsManager.SetSFXVolume(v/100);
-                        }),
-                    new SliderSetting("Voice Volume", 0f, 100f, GameSettingsManager.VoiceVolume*100,
-                        v =>
-                        {
-                            Debug.Log("Voice Volume: " + v + " " + v/100);
-                            GameSettingsManager.SetVoiceVolume(v/100);
-                        })
+            new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
+            new Submenu("settings", UIStringKey.Settings, "tier1-button",
+                new GroupContainerMenuItem("audio", UIStringKey.Audio, "",
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
+                        v => { GameSettingsManager.SetMasterVolume(v/100); }),
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
+                        v => { GameSettingsManager.SetMusicVolume(v/100); }),
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
+                        v => { GameSettingsManager.SetSFXVolume(v/100); }),
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
+                        v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
-                new GroupContainerMenuItem("video", "Video", "",
+                new GroupContainerMenuItem("video", UIStringKey.Video, "",
                     new DropdownSetting(
-                        "Resolution",
+                        LocalizationHelper.GetUIText(UIStringKey.Resolution),
                         ResolutionSettingExtensions.GetResolutionList(),
                         ResolutionSettingExtensions.ToResolutionString(GameSettingsManager.ScreenResolution),
-                        val => {
-                            Debug.Log("ScreenResolution: " + val);
-                            GameSettingsManager.SetScreenResolution(ResolutionSettingExtensions.ToResolutionSetting(val));
-                        }),
+                        val => { GameSettingsManager.SetScreenResolution(ResolutionSettingExtensions.ToResolutionSetting(val)); }),
                     new DropdownSetting(
-                        "Screen Mode",
+                        LocalizationHelper.GetUIText(UIStringKey.ScreenMode),
                         ScreenModeSettingExtensions.GetScreenModeList(),
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
-                        val => {
-                            Debug.Log("ScreenMode: " + val);
-                            GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val));
-                        })
+                        val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })
                 ),
-                new GroupContainerMenuItem("gameplay", "Gameplay", "",
+                new GroupContainerMenuItem("gameplay", UIStringKey.Gameplay, "",
                     new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("controls", "Controls", "",
+                new GroupContainerMenuItem("controls", UIStringKey.Controls, "",
                     new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("misc", "Misc", "",
+                new GroupContainerMenuItem("misc", UIStringKey.Misc, "",
                     languageSetting,
                     new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
             ),
-            new Submenu("debug", "Debug",
-                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)
-            ),
-            new LeafMenuItem("quit", "Quit Game", HandleQuit)
+            new Submenu("debug", UIStringKey.Debug, null,
+                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)),
+            new LeafMenuItem("quit", "Quit Game", HandleQuit, null, UIStringKey.QuitGame)
         };
 
         foreach (var item in rootMenu)
@@ -129,8 +124,11 @@ public class PauseMenuController : MonoBehaviour
             var btn = new Button(() =>
             {
                 item.OnClick(elementContent, null, 2);
-            })
-            { text = item.Label };
+            });
+            if (item.LocalizationKey.HasValue)
+                LocalizationHelper.LocalizeTextElement(btn, item.LocalizationKey.Value);
+            else
+                btn.text = item.Label;
 
             btn.AddToClassList("menu-button");
             btn.AddToClassList("tier1-button");
@@ -140,6 +138,11 @@ public class PauseMenuController : MonoBehaviour
 
             elementContent.Add(btn);
         }
+    }
+
+    private void UpdateLanguageDropdown(LanguageSetting lang)
+    {
+        languageSetting?.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
     }
 
     void Update()

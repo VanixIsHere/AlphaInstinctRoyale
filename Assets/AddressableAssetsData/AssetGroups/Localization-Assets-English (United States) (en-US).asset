@@ -14,7 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Localization-Assets-English (United States) (en-US)
   m_GUID: 3a837c85eca1f39459114226fac510e3
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 198bae55d5eb5e64a85075253484b631
+    m_Address: NotoSans-Regular SDF
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b86fafdb7ba7e734ab43c3c84406135d
+    m_Address: GermaniaOne-Regular SDF
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 66b67a92cde75914ebc7cdc063d3c88c, type: 2}
   m_SchemaSet:

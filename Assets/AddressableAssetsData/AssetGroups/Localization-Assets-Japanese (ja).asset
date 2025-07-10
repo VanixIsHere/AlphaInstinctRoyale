@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Localization-Assets-Japanese (ja)
   m_GUID: e586211bd9a12dc44981cb8fa0c1da13
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 8131f7818f9ff4e44929998b54830408
+    m_Address: NotoSansJP-Regular SDF
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ja
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 66b67a92cde75914ebc7cdc063d3c88c, type: 2}
   m_SchemaSet:
