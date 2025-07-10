@@ -79,13 +79,23 @@ public class ModalManager : MonoBehaviour
 
     private System.Collections.IEnumerator Countdown(float time, Label label, Action onCancel)
     {
-        float remaining = time;
-        while (remaining > 0f)
+        var start = DateTime.UtcNow;
+        int lastDisplay = Mathf.CeilToInt(time);
+        while (true)
         {
-            if (label != null)
+            float elapsed = (float)(DateTime.UtcNow - start).TotalSeconds;
+            float remaining = time - elapsed;
+            if (remaining <= 0f)
+                break;
+
+            int seconds = Mathf.CeilToInt(remaining);
+            if (label != null && seconds != lastDisplay)
+            {
                 label.text = FormatCountdown(remaining);
-            yield return new WaitForSecondsRealtime(1f);
-            remaining -= 1f;
+                lastDisplay = seconds;
+            }
+
+            yield return null;
         }
 
         root.Remove(activeModal);

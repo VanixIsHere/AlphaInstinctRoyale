@@ -159,6 +159,12 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
             activePage.dirty = true;
     }
 
+    internal static void ClearPendingChanges()
+    {
+        if (activePage != null)
+            activePage.dirty = false;
+    }
+
     public GroupContainerMenuItem(string id, UIStringKey localizationKey, string styleClass = null, params ISettingItem[] settings)
     {
         Id = id;

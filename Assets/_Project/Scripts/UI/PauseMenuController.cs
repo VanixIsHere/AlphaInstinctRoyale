@@ -94,11 +94,12 @@ public class PauseMenuController : MonoBehaviour
                 modal.ShowTimedConfirm(
                     "Keep language?",
                     "Reverting if not confirmed.",
-                    null,
+                    () => { GroupContainerMenuItem.ClearPendingChanges(); },
                     () =>
                     {
                         suppressLanguagePrompt = true;
                         GameSettingsManager.SetLanguage(prev);
+                        GroupContainerMenuItem.ClearPendingChanges();
                     });
             });
 
@@ -140,12 +141,13 @@ public class PauseMenuController : MonoBehaviour
                             modal.ShowTimedConfirm(
                                 "Keep resolution?",
                                 "Reverting if not confirmed.",
-                                null,
+                                () => { GroupContainerMenuItem.ClearPendingChanges(); },
                                 () =>
                                 {
                                     suppressResolutionPrompt = true;
                                     resolutionSetting?.SetValue(ResolutionSettingExtensions.ToResolutionString(prev));
                                     GameSettingsManager.SetScreenResolution(prev);
+                                    GroupContainerMenuItem.ClearPendingChanges();
                                 });
                         }),
                     new DropdownSetting(
