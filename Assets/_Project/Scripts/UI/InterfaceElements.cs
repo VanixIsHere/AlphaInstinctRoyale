@@ -132,7 +132,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
             "You have unsaved settings.",
             () => { activePage.Apply(); onContinue?.Invoke(); },
             () => { activePage.DiscardChanges(); onContinue?.Invoke(); },
-            "Apply",
+            LocalizationHelper.GetUIText(UIStringKey.Apply),
             "Discard"
         );
     }
@@ -168,7 +168,10 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
         {
             root.Add(setting.Build());
         }
-        var apply = new Button(() => { Apply(); }) { text = "Apply" };
+        var apply = new Button(() => { Apply(); })
+        {
+            text = LocalizationHelper.GetUIText(UIStringKey.Apply)
+        };
         apply.AddToClassList("apply-button");
         root.Add(apply);
         return root;
