@@ -55,6 +55,13 @@ public class PauseMenuController : MonoBehaviour
     private bool suppressLanguagePrompt;
     private bool suppressResolutionPrompt;
 
+    private void ResetMenuState()
+    {
+        BuildMenu();
+        suppressLanguagePrompt = false;
+        suppressResolutionPrompt = false;
+    }
+
     private void BuildMenu()
     {
         var root = rootDoc.rootVisualElement.Q<VisualElement>("ROOT");
@@ -214,6 +221,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void TogglePauseInternal()
     {
+        bool wasPaused = isPaused;
         isPaused = !isPaused;
 
         if (rootDoc != null)
@@ -233,6 +241,9 @@ public class PauseMenuController : MonoBehaviour
 
         uiBlocker?.SetBlocking(isPaused);
         cursor.SetState(CursorState.Normal);
+
+        if (!isPaused && wasPaused)
+            ResetMenuState();
     }
 
     // Optional resume button hook
@@ -258,6 +269,8 @@ public class PauseMenuController : MonoBehaviour
 
         uiBlocker?.SetBlocking(isPaused);
         cursor.SetState(CursorState.Normal);
+
+        ResetMenuState();
     }
 
     private void ExitLeafNode()
