@@ -5,6 +5,7 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Components;
 using UnityEngine.UIElements;
 using TMPro;
+using Unity.VisualScripting;
 
 public enum UIStringKey
 {
@@ -97,7 +98,9 @@ public static class LocalizationHelper
         }
 
         var localizedString = new LocalizedString(UIStringsTableName, entryKey);
-        var localizedFont = new LocalizedAsset<Font>(FontTableName, fontEntry);
+        var localizedFont = new LocalizedAsset<Font>();
+        localizedFont.TableReference = FontTableName;
+        localizedFont.TableEntryReference = fontEntry;
 
         void UpdateText(string value) => element.text = value;
         void UpdateFont(Font asset) => element.style.unityFontDefinition = FontDefinition.FromFont(asset);
@@ -130,7 +133,9 @@ public static class LocalizationHelper
         }
 
         var localizedString = new LocalizedString(UIStringsTableName, entryKey);
-        var localizedFont = new LocalizedAsset<TMP_FontAsset>(FontTableName, fontEntry);
+        var localizedFont = new LocalizedAsset<TMP_FontAsset>();
+        localizedFont.TableReference = FontTableName;
+        localizedFont.TableEntryReference = fontEntry;
 
         void UpdateText(string value) => textComponent.text = value;
         void UpdateFont(TMP_FontAsset asset) => textComponent.font = asset;
@@ -138,11 +143,13 @@ public static class LocalizationHelper
         localizedString.StringChanged += UpdateText;
         localizedFont.AssetChanged += UpdateFont;
 
+        /*
         textComponent.RegisterCallback<DetachFromPanelEvent>(_ =>
         {
             localizedString.StringChanged -= UpdateText;
             localizedFont.AssetChanged -= UpdateFont;
         });
+        */
 
         localizedFont.LoadAssetAsync();
         localizedString.RefreshString();
