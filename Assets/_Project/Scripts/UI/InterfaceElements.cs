@@ -357,6 +357,13 @@ public class DropdownSetting : ISettingItem
             dropdownField.value = value;
     }
 
+    public void SetDisplayValue(string value)
+    {
+        currentValue = value;
+        if (dropdownField != null)
+            dropdownField.SetValueWithoutNotify(value);
+    }
+
     public void Apply()
     {
         initialValue = currentValue;

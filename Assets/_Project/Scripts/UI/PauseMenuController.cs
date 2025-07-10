@@ -145,7 +145,7 @@ public class PauseMenuController : MonoBehaviour
                                 () =>
                                 {
                                     suppressResolutionPrompt = true;
-                                    resolutionSetting?.SetValue(ResolutionSettingExtensions.ToResolutionString(prev));
+                                    resolutionSetting?.SetDisplayValue(ResolutionSettingExtensions.ToResolutionString(prev));
                                     GameSettingsManager.SetScreenResolution(prev);
                                     GroupContainerMenuItem.ClearPendingChanges();
                                 });
@@ -198,7 +198,7 @@ public class PauseMenuController : MonoBehaviour
         if (languageSetting != null)
         {
             suppressLanguagePrompt = true;
-            languageSetting.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+            languageSetting.SetDisplayValue(LanguageSettingExtensions.ToLanguageString(lang));
         }
     }
 
