@@ -81,17 +81,18 @@ public class PauseMenuController : MonoBehaviour
         {
             new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
             new Submenu("settings", "Settings", "tier1-button",
-                new GroupContainerMenuItem("audio", "Audio", "", localizationKey: UIStringKey.Audio,
+                new GroupContainerMenuItem("audio", "Audio", "",
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
                         v => { GameSettingsManager.SetMasterVolume(v/100); }),
-                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
-                            v => { GameSettingsManager.SetMusicVolume(v/100); }),
-                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
-                            v => { GameSettingsManager.SetSFXVolume(v/100); }),
-                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
-                            v => { GameSettingsManager.SetVoiceVolume(v/100); })
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
+                        v => { GameSettingsManager.SetMusicVolume(v/100); }),
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
+                        v => { GameSettingsManager.SetSFXVolume(v/100); }),
+                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
+                        v => { GameSettingsManager.SetVoiceVolume(v/100); }),
+                    localizationKey: UIStringKey.Audio
                 ),
-                new GroupContainerMenuItem("video", "Video", "", localizationKey: UIStringKey.Video,
+                new GroupContainerMenuItem("video", "Video", "",
                     new DropdownSetting(
                         LocalizationHelper.GetUIText(UIStringKey.Resolution),
                         ResolutionSettingExtensions.GetResolutionList(),
@@ -101,17 +102,21 @@ public class PauseMenuController : MonoBehaviour
                         LocalizationHelper.GetUIText(UIStringKey.ScreenMode),
                         ScreenModeSettingExtensions.GetScreenModeList(),
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
-                        val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })
+                        val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); }),
+                    localizationKey: UIStringKey.Video
                 ),
-                new GroupContainerMenuItem("gameplay", "Gameplay", "", localizationKey: UIStringKey.Gameplay,
-                    new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b))
+                new GroupContainerMenuItem("gameplay", "Gameplay", "",
+                    new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b)),
+                    localizationKey: UIStringKey.Gameplay
                 ),
-                new GroupContainerMenuItem("controls", "Controls", "", localizationKey: UIStringKey.Controls,
-                    new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
+                new GroupContainerMenuItem("controls", "Controls", "",
+                    new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b)),
+                    localizationKey: UIStringKey.Controls
                 ),
-                new GroupContainerMenuItem("misc", "Misc", "", localizationKey: UIStringKey.Misc,
+                new GroupContainerMenuItem("misc", "Misc", "",
                     languageSetting,
-                    new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
+                    new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b)),
+                    localizationKey: UIStringKey.Misc
                 )
             , localizationKey: UIStringKey.Settings),
             new Submenu("debug", "Debug",
