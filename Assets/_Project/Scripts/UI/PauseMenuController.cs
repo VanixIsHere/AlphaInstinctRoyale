@@ -119,9 +119,9 @@ public class PauseMenuController : MonoBehaviour
                     localizationKey: UIStringKey.Misc
                 )
             , localizationKey: UIStringKey.Settings),
-            new Submenu("debug", "Debug",
-                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)
-            , localizationKey: UIStringKey.Debug),
+            new Submenu("debug", "Debug", null,
+                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking),
+                localizationKey: UIStringKey.Debug),
             new LeafMenuItem("quit", "Quit Game", HandleQuit, null, UIStringKey.QuitGame)
         };
 

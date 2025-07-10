@@ -40,8 +40,8 @@ public class Submenu : IMenuItem
 
     public List<IMenuItem> Children { get; }
 
-    public Submenu(string id, string label, params IMenuItem[] children)
-        : this(id, label, null, children) { }
+    public Submenu(string id, string label, string styleClass = null, params IMenuItem[] children)
+        : this(id, label, styleClass, children, null) { }
 
     public Submenu(string id, string label, string styleClass, params IMenuItem[] children, UIStringKey? localizationKey = null)
     {
