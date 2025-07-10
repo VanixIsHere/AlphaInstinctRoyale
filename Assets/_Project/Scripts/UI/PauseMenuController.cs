@@ -80,8 +80,8 @@ public class PauseMenuController : MonoBehaviour
         var rootMenu = new List<IMenuItem>
         {
             new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
-            new Submenu("settings", "Settings", "tier1-button",
-                new GroupContainerMenuItem("audio", "Audio", "",
+            new Submenu("settings", UIStringKey.Settings, "tier1-button",
+                new GroupContainerMenuItem("audio", UIStringKey.Audio, "",
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
                         v => { GameSettingsManager.SetMasterVolume(v/100); }),
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
@@ -89,10 +89,9 @@ public class PauseMenuController : MonoBehaviour
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
                         v => { GameSettingsManager.SetSFXVolume(v/100); }),
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
-                        v => { GameSettingsManager.SetVoiceVolume(v/100); }),
-                    localizationKey: UIStringKey.Audio
+                        v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
-                new GroupContainerMenuItem("video", "Video", "",
+                new GroupContainerMenuItem("video", UIStringKey.Video, "",
                     new DropdownSetting(
                         LocalizationHelper.GetUIText(UIStringKey.Resolution),
                         ResolutionSettingExtensions.GetResolutionList(),
@@ -102,26 +101,21 @@ public class PauseMenuController : MonoBehaviour
                         LocalizationHelper.GetUIText(UIStringKey.ScreenMode),
                         ScreenModeSettingExtensions.GetScreenModeList(),
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
-                        val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); }),
-                    localizationKey: UIStringKey.Video
+                        val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })
                 ),
-                new GroupContainerMenuItem("gameplay", "Gameplay", "",
-                    new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b)),
-                    localizationKey: UIStringKey.Gameplay
+                new GroupContainerMenuItem("gameplay", UIStringKey.Gameplay, "",
+                    new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("controls", "Controls", "",
-                    new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b)),
-                    localizationKey: UIStringKey.Controls
+                new GroupContainerMenuItem("controls", UIStringKey.Controls, "",
+                    new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("misc", "Misc", "",
+                new GroupContainerMenuItem("misc", UIStringKey.Misc, "",
                     languageSetting,
-                    new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b)),
-                    localizationKey: UIStringKey.Misc
+                    new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
-            , localizationKey: UIStringKey.Settings),
-            new Submenu("debug", "Debug", null,
-                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking),
-                localizationKey: UIStringKey.Debug),
+            ),
+            new Submenu("debug", UIStringKey.Debug, null,
+                new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)),
             new LeafMenuItem("quit", "Quit Game", HandleQuit, null, UIStringKey.QuitGame)
         };
 

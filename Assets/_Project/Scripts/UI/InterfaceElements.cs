@@ -34,19 +34,15 @@ public interface ISettingsPage
 public class Submenu : IMenuItem
 {
     public string Id { get; }
-    public string Label { get; }
+    public string Label => LocalizationKey.HasValue ? LocalizationHelper.GetUIText(LocalizationKey.Value) : string.Empty;
     public UIStringKey? LocalizationKey { get; }
     public string StyleClass { get; }
 
     public List<IMenuItem> Children { get; }
 
-    public Submenu(string id, string label, string styleClass = null, params IMenuItem[] children)
-        : this(id, label, styleClass, children, null) { }
-
-    public Submenu(string id, string label, string styleClass, params IMenuItem[] children, UIStringKey? localizationKey = null)
+    public Submenu(string id, UIStringKey localizationKey, string styleClass = null, params IMenuItem[] children)
     {
         Id = id;
-        Label = label;
         StyleClass = styleClass;
         Children = new List<IMenuItem>(children);
         LocalizationKey = localizationKey;
@@ -117,7 +113,7 @@ public class LeafMenuItem : IMenuItem
 public class GroupContainerMenuItem : IMenuItem, ISettingsPage
 {
     public string Id { get; }
-    public string Label { get; }
+    public string Label => LocalizationKey.HasValue ? LocalizationHelper.GetUIText(LocalizationKey.Value) : string.Empty;
     public UIStringKey? LocalizationKey { get; }
     public string StyleClass { get; }
 
@@ -163,13 +159,12 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
             activePage.dirty = true;
     }
 
-    public GroupContainerMenuItem(string id, string label, string styleClass = null, params ISettingItem[] settings, UIStringKey? localizationKey = null)
+    public GroupContainerMenuItem(string id, UIStringKey localizationKey, string styleClass = null, params ISettingItem[] settings)
     {
         Id = id;
-        Label = label;
-        _settings = new List<ISettingItem>(settings);
-        StyleClass = styleClass;
         LocalizationKey = localizationKey;
+        StyleClass = styleClass;
+        _settings = new List<ISettingItem>(settings);
     }
 
     public VisualElement Build()
