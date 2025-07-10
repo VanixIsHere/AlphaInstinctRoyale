@@ -7,6 +7,7 @@ public interface IMenuItem
 {
     string Id { get; }
     string Label { get; }
+    UIStringKey? LocalizationKey { get; }
     string StyleClass { get; }
     void OnClick(VisualElement parentLayer, VisualElement nextLayer, int tier);
 }
@@ -34,6 +35,7 @@ public class Submenu : IMenuItem
 {
     public string Id { get; }
     public string Label { get; }
+    public UIStringKey? LocalizationKey { get; }
     public string StyleClass { get; }
 
     public List<IMenuItem> Children { get; }
@@ -41,12 +43,13 @@ public class Submenu : IMenuItem
     public Submenu(string id, string label, params IMenuItem[] children)
         : this(id, label, null, children) { }
 
-    public Submenu(string id, string label, string styleClass, params IMenuItem[] children)
+    public Submenu(string id, string label, string styleClass, params IMenuItem[] children, UIStringKey? localizationKey = null)
     {
         Id = id;
         Label = label;
         StyleClass = styleClass;
         Children = new List<IMenuItem>(children);
+        LocalizationKey = localizationKey;
     }
 
     public void OnClick(VisualElement parentLayer, VisualElement nextLayer, int tier)
@@ -62,8 +65,11 @@ public class Submenu : IMenuItem
             var btn = new Button(() =>
             {
                 child.OnClick(layer, null, tier + 1);
-            })
-            { text = child.Label };
+            });
+            if (child.LocalizationKey.HasValue)
+                LocalizationHelper.LocalizeTextElement(btn, child.LocalizationKey.Value);
+            else
+                btn.text = child.Label;
 
             btn.AddToClassList("menu-button");
             btn.AddToClassList($"tier{tier}-button");
@@ -82,16 +88,19 @@ public class LeafMenuItem : IMenuItem
 {
     public string Id { get; }
     public string Label { get; }
+    public UIStringKey? LocalizationKey => localizationKey;
     public string StyleClass { get; }
 
     private readonly System.Action onClickAction;
+    private readonly UIStringKey? localizationKey;
 
-    public LeafMenuItem(string id, string label, System.Action onClick, string styleClass = null)
+    public LeafMenuItem(string id, string label, System.Action onClick, string styleClass = null, UIStringKey? localizationKey = null)
     {
         Id = id;
         Label = label;
         onClickAction = onClick;
         StyleClass = styleClass;
+        this.localizationKey = localizationKey;
     }
 
     public void OnClick(VisualElement parentLayer, VisualElement nextLayer, int tier)
@@ -109,6 +118,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
 {
     public string Id { get; }
     public string Label { get; }
+    public UIStringKey? LocalizationKey { get; }
     public string StyleClass { get; }
 
     private readonly List<ISettingItem> _settings;
@@ -153,12 +163,13 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
             activePage.dirty = true;
     }
 
-    public GroupContainerMenuItem(string id, string label, string styleClass = null, params ISettingItem[] settings)
+    public GroupContainerMenuItem(string id, string label, string styleClass = null, params ISettingItem[] settings, UIStringKey? localizationKey = null)
     {
         Id = id;
         Label = label;
         _settings = new List<ISettingItem>(settings);
         StyleClass = styleClass;
+        LocalizationKey = localizationKey;
     }
 
     public VisualElement Build()
@@ -168,10 +179,8 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
         {
             root.Add(setting.Build());
         }
-        var apply = new Button(() => { Apply(); })
-        {
-            text = LocalizationHelper.GetUIText(UIStringKey.Apply)
-        };
+        var apply = new Button(() => { Apply(); });
+        LocalizationHelper.LocalizeTextElement(apply, UIStringKey.Apply);
         apply.AddToClassList("apply-button");
         root.Add(apply);
         return root;

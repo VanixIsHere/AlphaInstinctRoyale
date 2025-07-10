@@ -79,19 +79,19 @@ public class PauseMenuController : MonoBehaviour
 
         var rootMenu = new List<IMenuItem>
         {
-            new LeafMenuItem("resume", LocalizationHelper.GetUIText(UIStringKey.Resume), ResumeGame),
-            new Submenu("settings", LocalizationHelper.GetUIText(UIStringKey.Settings), "tier1-button",
-                new GroupContainerMenuItem("audio", LocalizationHelper.GetUIText(UIStringKey.Audio), "",
+            new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
+            new Submenu("settings", "Settings", "tier1-button",
+                new GroupContainerMenuItem("audio", "Audio", "", localizationKey: UIStringKey.Audio,
                     new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
                         v => { GameSettingsManager.SetMasterVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
-                        v => { GameSettingsManager.SetMusicVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
-                        v => { GameSettingsManager.SetSFXVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
-                        v => { GameSettingsManager.SetVoiceVolume(v/100); })
+                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
+                            v => { GameSettingsManager.SetMusicVolume(v/100); }),
+                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
+                            v => { GameSettingsManager.SetSFXVolume(v/100); }),
+                        new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
+                            v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
-                new GroupContainerMenuItem("video", LocalizationHelper.GetUIText(UIStringKey.Video), "",
+                new GroupContainerMenuItem("video", "Video", "", localizationKey: UIStringKey.Video,
                     new DropdownSetting(
                         LocalizationHelper.GetUIText(UIStringKey.Resolution),
                         ResolutionSettingExtensions.GetResolutionList(),
@@ -103,21 +103,21 @@ public class PauseMenuController : MonoBehaviour
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
                         val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })
                 ),
-                new GroupContainerMenuItem("gameplay", LocalizationHelper.GetUIText(UIStringKey.Gameplay), "",
+                new GroupContainerMenuItem("gameplay", "Gameplay", "", localizationKey: UIStringKey.Gameplay,
                     new ToggleSetting("<filler option gameplay>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("controls", LocalizationHelper.GetUIText(UIStringKey.Controls), "",
+                new GroupContainerMenuItem("controls", "Controls", "", localizationKey: UIStringKey.Controls,
                     new ToggleSetting("<filler option controls>", true, b => Debug.Log("Useless: " + b))
                 ),
-                new GroupContainerMenuItem("misc", LocalizationHelper.GetUIText(UIStringKey.Misc), "",
+                new GroupContainerMenuItem("misc", "Misc", "", localizationKey: UIStringKey.Misc,
                     languageSetting,
                     new ToggleSetting("<filler option misc>", true, b => Debug.Log("Useless: " + b))
                 )
-            ),
-            new Submenu("debug", LocalizationHelper.GetUIText(UIStringKey.Debug),
+            , localizationKey: UIStringKey.Settings),
+            new Submenu("debug", "Debug",
                 new LeafMenuItem("matchmaking", "Enter matchmaking", HandleAttemptMatchmaking)
-            ),
-            new LeafMenuItem("quit", LocalizationHelper.GetUIText(UIStringKey.QuitGame), HandleQuit)
+            , localizationKey: UIStringKey.Debug),
+            new LeafMenuItem("quit", "Quit Game", HandleQuit, null, UIStringKey.QuitGame)
         };
 
         foreach (var item in rootMenu)
@@ -125,8 +125,11 @@ public class PauseMenuController : MonoBehaviour
             var btn = new Button(() =>
             {
                 item.OnClick(elementContent, null, 2);
-            })
-            { text = item.Label };
+            });
+            if (item.LocalizationKey.HasValue)
+                LocalizationHelper.LocalizeTextElement(btn, item.LocalizationKey.Value);
+            else
+                btn.text = item.Label;
 
             btn.AddToClassList("menu-button");
             btn.AddToClassList("tier1-button");
