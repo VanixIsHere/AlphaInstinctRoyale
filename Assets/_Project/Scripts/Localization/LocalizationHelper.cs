@@ -97,15 +97,48 @@ public static class LocalizationHelper
         }
 
         var localizedString = new LocalizedString(UIStringsTableName, entryKey);
-        var localizedFont = new LocalizedAsset<TMP_FontAsset>(FontTableName, fontEntry);
+        var localizedFont = new LocalizedAsset<Font>(FontTableName, fontEntry);
 
         void UpdateText(string value) => element.text = value;
-        void UpdateFont(TMP_FontAsset asset) => element.style.unityFontDefinition = FontDefinition.FromTMPFont(asset);
+        void UpdateFont(Font asset) => element.style.unityFontDefinition = FontDefinition.FromFont(asset);
 
         localizedString.StringChanged += UpdateText;
         localizedFont.AssetChanged += UpdateFont;
 
         element.RegisterCallback<DetachFromPanelEvent>(_ =>
+        {
+            localizedString.StringChanged -= UpdateText;
+            localizedFont.AssetChanged -= UpdateFont;
+        });
+
+        localizedFont.LoadAssetAsync();
+        localizedString.RefreshString();
+    }
+
+    public static void LocalizeTMPText(TMP_Text textComponent, UIStringKey key, FontKey fontKey = FontKey.Standard)
+    {
+        if (!UIKeyMap.TryGetValue(key, out var entryKey))
+        {
+            Debug.LogWarning($"UIStringKey '{key}' is not mapped to a localization entry.");
+            return;
+        }
+
+        if (!FontKeyMap.TryGetValue(fontKey, out var fontEntry))
+        {
+            Debug.LogWarning($"FontKey '{fontKey}' is not mapped to a localization entry.");
+            fontEntry = FontKeyMap[FontKey.Standard];
+        }
+
+        var localizedString = new LocalizedString(UIStringsTableName, entryKey);
+        var localizedFont = new LocalizedAsset<TMP_FontAsset>(FontTableName, fontEntry);
+
+        void UpdateText(string value) => textComponent.text = value;
+        void UpdateFont(TMP_FontAsset asset) => textComponent.font = asset;
+
+        localizedString.StringChanged += UpdateText;
+        localizedFont.AssetChanged += UpdateFont;
+
+        textComponent.RegisterCallback<DetachFromPanelEvent>(_ =>
         {
             localizedString.StringChanged -= UpdateText;
             localizedFont.AssetChanged -= UpdateFont;
