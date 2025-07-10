@@ -51,6 +51,9 @@ public class PauseMenuController : MonoBehaviour
     }
 
     private DropdownSetting languageSetting;
+    private DropdownSetting resolutionSetting;
+    private bool suppressLanguagePrompt;
+    private bool suppressResolutionPrompt;
 
     private void BuildMenu()
     {
@@ -74,7 +77,30 @@ public class PauseMenuController : MonoBehaviour
             "Language",
             LanguageSettingExtensions.GetLanguageList(),
             LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
-            val => { GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val)); });
+            val =>
+            {
+                if (suppressLanguagePrompt)
+                {
+                    suppressLanguagePrompt = false;
+                    return;
+                }
+
+                var prev = GameSettingsManager.Language;
+                var chosen = LanguageSettingExtensions.ToLanguageSetting(val);
+                if (prev == chosen)
+                    return;
+
+                GameSettingsManager.SetLanguage(chosen);
+                modal.ShowTimedConfirm(
+                    "Keep language?",
+                    "Reverting if not confirmed.",
+                    null,
+                    () =>
+                    {
+                        suppressLanguagePrompt = true;
+                        GameSettingsManager.SetLanguage(prev);
+                    });
+            });
 
         GameSettingsManager.LanguageChanged += UpdateLanguageDropdown;
 
@@ -93,11 +119,35 @@ public class PauseMenuController : MonoBehaviour
                         v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
                 new GroupContainerMenuItem("video", UIStringKey.Video, "",
-                    new DropdownSetting(
+                    resolutionSetting = new DropdownSetting(
                         UIStringKey.Resolution,
                         ResolutionSettingExtensions.GetResolutionList(),
                         ResolutionSettingExtensions.ToResolutionString(GameSettingsManager.ScreenResolution),
-                        val => { GameSettingsManager.SetScreenResolution(ResolutionSettingExtensions.ToResolutionSetting(val)); }),
+                        val =>
+                        {
+                            if (suppressResolutionPrompt)
+                            {
+                                suppressResolutionPrompt = false;
+                                return;
+                            }
+
+                            var prev = GameSettingsManager.ScreenResolution;
+                            var chosen = ResolutionSettingExtensions.ToResolutionSetting(val);
+                            if (prev == chosen)
+                                return;
+
+                            GameSettingsManager.SetScreenResolution(chosen);
+                            modal.ShowTimedConfirm(
+                                "Keep resolution?",
+                                "Reverting if not confirmed.",
+                                null,
+                                () =>
+                                {
+                                    suppressResolutionPrompt = true;
+                                    resolutionSetting?.SetValue(ResolutionSettingExtensions.ToResolutionString(prev));
+                                    GameSettingsManager.SetScreenResolution(prev);
+                                });
+                        }),
                     new DropdownSetting(
                         UIStringKey.ScreenMode,
                         ScreenModeSettingExtensions.GetScreenModeList(),
@@ -143,7 +193,11 @@ public class PauseMenuController : MonoBehaviour
 
     private void UpdateLanguageDropdown(LanguageSetting lang)
     {
-        languageSetting?.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+        if (languageSetting != null)
+        {
+            suppressLanguagePrompt = true;
+            languageSetting.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+        }
     }
 
     void Update()

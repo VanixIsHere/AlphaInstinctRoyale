@@ -31,7 +31,7 @@ public class ModalManager : MonoBehaviour
 
         var timeoutLabel = activeModal.Q<Label>("TimeoutText");
         if (timeoutLabel != null)
-            timeoutLabel.text = Mathf.CeilToInt(timeout) + "s";
+            timeoutLabel.text = FormatCountdown(timeout);
 
         countdownRoutine = StartCoroutine(Countdown(timeout, timeoutLabel, onCancel));
     }
@@ -83,7 +83,7 @@ public class ModalManager : MonoBehaviour
         while (remaining > 0f)
         {
             if (label != null)
-                label.text = Mathf.CeilToInt(remaining) + "s";
+                label.text = FormatCountdown(remaining);
             yield return new WaitForSecondsRealtime(1f);
             remaining -= 1f;
         }
@@ -92,5 +92,11 @@ public class ModalManager : MonoBehaviour
         activeModal = null;
         countdownRoutine = null;
         onCancel?.Invoke();
+    }
+
+    private static string FormatCountdown(float seconds)
+    {
+        int rounded = Mathf.CeilToInt(seconds);
+        return rounded == 1 ? "1 second" : $"{rounded} seconds";
     }
 }
