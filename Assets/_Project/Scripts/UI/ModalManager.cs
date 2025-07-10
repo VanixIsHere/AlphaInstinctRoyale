@@ -7,6 +7,7 @@ public class ModalManager : MonoBehaviour
     public VisualTreeAsset modalTemplate;
     private VisualElement root;
     private VisualElement activeModal;
+    private Coroutine countdownRoutine;
 
     void Awake()
     {
@@ -18,6 +19,25 @@ public class ModalManager : MonoBehaviour
         if (activeModal != null)
             return;
 
+        ShowConfirmInternal(primaryLabel, secondaryLabel, onConfirm, onCancel, confirmText, cancelText);
+    }
+
+    public void ShowTimedConfirm(string primaryLabel, string secondaryLabel, Action onConfirm, Action onCancel = null, float timeout = 30f, string confirmText = "Confirm", string cancelText = "Cancel")
+    {
+        if (activeModal != null)
+            return;
+
+        ShowConfirmInternal(primaryLabel, secondaryLabel, onConfirm, onCancel, confirmText, cancelText);
+
+        var timeoutLabel = activeModal.Q<Label>("TimeoutText");
+        if (timeoutLabel != null)
+            timeoutLabel.text = Mathf.CeilToInt(timeout) + "s";
+
+        countdownRoutine = StartCoroutine(Countdown(timeout, timeoutLabel, onCancel));
+    }
+
+    private void ShowConfirmInternal(string primaryLabel, string secondaryLabel, Action onConfirm, Action onCancel, string confirmText, string cancelText)
+    {
         activeModal = modalTemplate.CloneTree();
 
         var overlay = activeModal.Q<VisualElement>("WholeScreen");
@@ -28,7 +48,6 @@ public class ModalManager : MonoBehaviour
             overlay.style.top = 0;
             overlay.style.right = 0;
             overlay.style.bottom = 0;
-            // Use USS to control overlay layering; BringToFront adds safety
             overlay.BringToFront();
         }
 
@@ -38,6 +57,8 @@ public class ModalManager : MonoBehaviour
         confirmButton.text = confirmText;
         confirmButton.clicked += () =>
         {
+            if (countdownRoutine != null)
+                StopCoroutine(countdownRoutine);
             root.Remove(activeModal);
             activeModal = null;
             onConfirm?.Invoke();
@@ -46,11 +67,30 @@ public class ModalManager : MonoBehaviour
         cancelButton.text = cancelText;
         cancelButton.clicked += () =>
         {
+            if (countdownRoutine != null)
+                StopCoroutine(countdownRoutine);
             root.Remove(activeModal);
             activeModal = null;
             onCancel?.Invoke();
         };
 
         root.Add(activeModal);
+    }
+
+    private System.Collections.IEnumerator Countdown(float time, Label label, Action onCancel)
+    {
+        float remaining = time;
+        while (remaining > 0f)
+        {
+            if (label != null)
+                label.text = Mathf.CeilToInt(remaining) + "s";
+            yield return new WaitForSecondsRealtime(1f);
+            remaining -= 1f;
+        }
+
+        root.Remove(activeModal);
+        activeModal = null;
+        countdownRoutine = null;
+        onCancel?.Invoke();
     }
 }

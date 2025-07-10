@@ -3,6 +3,7 @@
     <engine:GroupBox name="ModalContainer" style="align-items: center; justify-content: center; align-self: center; align-content: center; background-color: rgba(0, 0, 0, 0.67); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 16px; padding-right: 16px; padding-bottom: 16px; padding-left: 16px; position: absolute;">
         <engine:Label text="PrimaryText" name="PrimaryText" class="primary-label" />
         <engine:Label text="SecondaryText" name="SecondaryText" class="secondary-label" />
+        <engine:Label text="30" name="TimeoutText" class="timeout-label" />
         <engine:GroupBox name="ConfirmOptions" class="confirm-options" style="flex-direction: row; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
             <engine:Button text="Button" name="Confirm" class="confirm-button" />
             <engine:Button text="Button" name="Cancel" class="cancel-button" />
