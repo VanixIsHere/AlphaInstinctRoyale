@@ -47,7 +47,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void OnLanguageChanged(LanguageSetting lang)
     {
-        BuildMenu();
+        UpdateLanguageDropdown(lang);
     }
 
     private DropdownSetting languageSetting;
@@ -63,6 +63,7 @@ public class PauseMenuController : MonoBehaviour
 
         menuRoot = elementContent;
         openLayers.Clear();
+        openItemIds.Clear();
         openLayers.Add(menuRoot);
         UIUtils.AdjustColumnFlex(menuRoot.parent);
 
@@ -82,23 +83,23 @@ public class PauseMenuController : MonoBehaviour
             new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
             new Submenu("settings", UIStringKey.Settings, "tier1-button",
                 new GroupContainerMenuItem("audio", UIStringKey.Audio, "",
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
+                    new SliderSetting(UIStringKey.MasterVolume, 0f, 100f, GameSettingsManager.MasterVolume*100,
                         v => { GameSettingsManager.SetMasterVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
+                    new SliderSetting(UIStringKey.MusicVolume, 0f, 100f, GameSettingsManager.MusicVolume*100,
                         v => { GameSettingsManager.SetMusicVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
+                    new SliderSetting(UIStringKey.SFXVolume, 0f, 100f, GameSettingsManager.SFXVolume*100,
                         v => { GameSettingsManager.SetSFXVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
+                    new SliderSetting(UIStringKey.VoiceVolume, 0f, 100f, GameSettingsManager.VoiceVolume*100,
                         v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
                 new GroupContainerMenuItem("video", UIStringKey.Video, "",
                     new DropdownSetting(
-                        LocalizationHelper.GetUIText(UIStringKey.Resolution),
+                        UIStringKey.Resolution,
                         ResolutionSettingExtensions.GetResolutionList(),
                         ResolutionSettingExtensions.ToResolutionString(GameSettingsManager.ScreenResolution),
                         val => { GameSettingsManager.SetScreenResolution(ResolutionSettingExtensions.ToResolutionSetting(val)); }),
                     new DropdownSetting(
-                        LocalizationHelper.GetUIText(UIStringKey.ScreenMode),
+                        UIStringKey.ScreenMode,
                         ScreenModeSettingExtensions.GetScreenModeList(),
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
                         val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })

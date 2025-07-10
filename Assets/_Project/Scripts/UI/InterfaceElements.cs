@@ -225,6 +225,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
 
 public class ToggleSetting : ISettingItem
 {
+    private readonly UIStringKey? labelKey;
     private readonly string label;
     private bool initialValue;
     private bool currentValue;
@@ -232,8 +233,18 @@ public class ToggleSetting : ISettingItem
 
     private Toggle toggle;
 
+    public ToggleSetting(UIStringKey labelKey, bool initialValue, System.Action<bool> onChanged)
+    {
+        this.labelKey = labelKey;
+        this.label = null;
+        this.initialValue = initialValue;
+        this.currentValue = initialValue;
+        this.onChanged = onChanged;
+    }
+
     public ToggleSetting(string label, bool initialValue, System.Action<bool> onChanged)
     {
+        this.labelKey = null;
         this.label = label;
         this.initialValue = initialValue;
         this.currentValue = initialValue;
@@ -246,7 +257,11 @@ public class ToggleSetting : ISettingItem
         container.style.flexDirection = FlexDirection.Row;
         container.style.justifyContent = Justify.SpaceBetween;
 
-        var lbl = new Label(label);
+        var lbl = new Label();
+        if (labelKey.HasValue)
+            LocalizationHelper.LocalizeTextElement(lbl, labelKey.Value);
+        else
+            lbl.text = label;
         toggle = new Toggle { value = initialValue };
 
         toggle.RegisterValueChangedCallback(evt => {
@@ -277,6 +292,7 @@ public class ToggleSetting : ISettingItem
 
 public class DropdownSetting : ISettingItem
 {
+    private readonly UIStringKey? labelKey;
     private readonly string label;
     private readonly List<string> options;
     private string initialValue;
@@ -285,8 +301,19 @@ public class DropdownSetting : ISettingItem
 
     private DropdownField dropdownField;
 
+    public DropdownSetting(UIStringKey labelKey, List<string> options, string initialValue, System.Action<string> onChanged)
+    {
+        this.labelKey = labelKey;
+        this.label = null;
+        this.options = options;
+        this.initialValue = initialValue;
+        this.currentValue = initialValue;
+        this.onChanged = onChanged;
+    }
+
     public DropdownSetting(string label, List<string> options, string initialValue, System.Action<string> onChanged)
     {
+        this.labelKey = null;
         this.label = label;
         this.options = options;
         this.initialValue = initialValue;
@@ -300,7 +327,11 @@ public class DropdownSetting : ISettingItem
         container.style.flexDirection = FlexDirection.Row;
         container.style.justifyContent = Justify.SpaceBetween;
 
-        var lbl = new Label(label);
+        var lbl = new Label();
+        if (labelKey.HasValue)
+            LocalizationHelper.LocalizeTextElement(lbl, labelKey.Value);
+        else
+            lbl.text = label;
         dropdownField = new DropdownField(options, currentValue);
         dropdownField.RegisterValueChangedCallback(evt => {
             currentValue = evt.newValue;
@@ -337,6 +368,7 @@ public class DropdownSetting : ISettingItem
 
 public class SliderSetting : ISettingItem
 {
+    private readonly UIStringKey? labelKey;
     private readonly string label;
     private readonly float min;
     private readonly float max;
@@ -346,8 +378,20 @@ public class SliderSetting : ISettingItem
 
     private Slider slider;
 
+    public SliderSetting(UIStringKey labelKey, float min, float max, float initialValue, System.Action<float> onChanged)
+    {
+        this.labelKey = labelKey;
+        this.label = null;
+        this.min = min;
+        this.max = max;
+        this.initialValue = initialValue;
+        this.currentValue = initialValue;
+        this.onChanged = onChanged;
+    }
+
     public SliderSetting(string label, float min, float max, float initialValue, System.Action<float> onChanged)
     {
+        this.labelKey = null;
         this.label = label;
         this.min = min;
         this.max = max;
@@ -362,7 +406,11 @@ public class SliderSetting : ISettingItem
         container.style.flexDirection = FlexDirection.Row;
         container.style.justifyContent = Justify.SpaceBetween;
 
-        var lbl = new Label(label);
+        var lbl = new Label();
+        if (labelKey.HasValue)
+            LocalizationHelper.LocalizeTextElement(lbl, labelKey.Value);
+        else
+            lbl.text = label;
         slider = new Slider(min, max) { value = initialValue };
         slider.RegisterValueChangedCallback(evt => {
             currentValue = evt.newValue;
