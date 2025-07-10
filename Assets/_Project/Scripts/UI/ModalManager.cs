@@ -40,16 +40,6 @@ public class ModalManager : MonoBehaviour
     {
         activeModal = modalTemplate.CloneTree();
 
-        var overlay = activeModal.Q<VisualElement>("WholeScreen");
-        if (overlay != null)
-        {
-            overlay.style.position = Position.Absolute;
-            overlay.style.left = 0;
-            overlay.style.top = 0;
-            overlay.style.right = 0;
-            overlay.style.bottom = 0;
-            overlay.BringToFront();
-        }
 
         activeModal.Q<Label>("PrimaryText").text = primaryLabel;
         activeModal.Q<Label>("SecondaryText").text = secondaryLabel;
