@@ -1,0 +1,5 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <engine:VisualElement class="LocalizationIconGroup" style="flex-grow: 1;">
+        <engine:Toggle style="position: absolute; bottom: 16px; left: 16px; background-image: url(&quot;project://database/Assets/_Project/Art/Icons/StandardUI/GlobeWireframe.png?fileID=21300000&amp;guid=6a269867e8ce1294eb15a600f3e7d43c&amp;type=3#GlobeWireframe&quot;);" />
+    </engine:VisualElement>
+</engine:UXML>

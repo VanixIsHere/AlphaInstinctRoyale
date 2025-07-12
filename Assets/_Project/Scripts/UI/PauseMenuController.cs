@@ -8,6 +8,7 @@ public class PauseMenuController : MonoBehaviour
     public static PauseMenuController Instance { get; private set; }
     public GameSettingsManager GameSettingsManager;
     public VisualTreeAsset InGameMenuContainer;
+    public VisualTreeAsset InGameLocalizationToggle;
     private bool isPaused = false;
 
     // Runtime state
@@ -70,6 +71,11 @@ public class PauseMenuController : MonoBehaviour
         var menuContainer = InGameMenuContainer.CloneTree();
         var elementContent = menuContainer.Q<VisualElement>("ui-element-content");
         root.Add(menuContainer);
+
+        if (InGameLocalizationToggle != null)
+        {
+            rootDoc.rootVisualElement.Add(InGameLocalizationToggle.CloneTree());
+        }
 
         menuRoot = elementContent;
         openLayers.Clear();
