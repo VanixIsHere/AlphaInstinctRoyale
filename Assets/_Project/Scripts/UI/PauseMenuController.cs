@@ -8,6 +8,7 @@ public class PauseMenuController : MonoBehaviour
     public static PauseMenuController Instance { get; private set; }
     public GameSettingsManager GameSettingsManager;
     public VisualTreeAsset InGameMenuContainer;
+    public VisualTreeAsset InGameLocalizationToggle;
     private bool isPaused = false;
 
     // Runtime state
@@ -47,10 +48,20 @@ public class PauseMenuController : MonoBehaviour
 
     private void OnLanguageChanged(LanguageSetting lang)
     {
-        BuildMenu();
+        UpdateLanguageDropdown(lang);
     }
 
     private DropdownSetting languageSetting;
+    private DropdownSetting resolutionSetting;
+    private bool suppressLanguagePrompt;
+    private bool suppressResolutionPrompt;
+
+    private void ResetMenuState()
+    {
+        BuildMenu();
+        suppressLanguagePrompt = false;
+        suppressResolutionPrompt = false;
+    }
 
     private void BuildMenu()
     {
@@ -61,8 +72,14 @@ public class PauseMenuController : MonoBehaviour
         var elementContent = menuContainer.Q<VisualElement>("ui-element-content");
         root.Add(menuContainer);
 
+        if (InGameLocalizationToggle != null)
+        {
+            rootDoc.rootVisualElement.Add(InGameLocalizationToggle.CloneTree());
+        }
+
         menuRoot = elementContent;
         openLayers.Clear();
+        openItemIds.Clear();
         openLayers.Add(menuRoot);
         UIUtils.AdjustColumnFlex(menuRoot.parent);
 
@@ -73,7 +90,26 @@ public class PauseMenuController : MonoBehaviour
             "Language",
             LanguageSettingExtensions.GetLanguageList(),
             LanguageSettingExtensions.ToLanguageString(GameSettingsManager.Language),
-            val => { GameSettingsManager.SetLanguage(LanguageSettingExtensions.ToLanguageSetting(val)); });
+            val =>
+            {
+                var prev = GameSettingsManager.Language;
+                var chosen = LanguageSettingExtensions.ToLanguageSetting(val);
+                if (prev == chosen)
+                    return;
+
+                GameSettingsManager.SetLanguage(chosen);
+                modal.ShowTimedConfirm(
+                    "Keep language?",
+                    "Reverting if not confirmed.",
+                    () => { GroupContainerMenuItem.ClearPendingChanges(); },
+                    () =>
+                    {
+                        suppressLanguagePrompt = true;
+                        GameSettingsManager.SetLanguage(prev);
+                        GroupContainerMenuItem.ClearPendingChanges();
+                        suppressLanguagePrompt = false;
+                    });
+            });
 
         GameSettingsManager.LanguageChanged += UpdateLanguageDropdown;
 
@@ -82,23 +118,43 @@ public class PauseMenuController : MonoBehaviour
             new LeafMenuItem("resume", "Resume", ResumeGame, null, UIStringKey.Resume),
             new Submenu("settings", UIStringKey.Settings, "tier1-button",
                 new GroupContainerMenuItem("audio", UIStringKey.Audio, "",
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MasterVolume), 0f, 100f, GameSettingsManager.MasterVolume*100,
+                    new SliderSetting(UIStringKey.MasterVolume, 0f, 100f, GameSettingsManager.MasterVolume*100,
                         v => { GameSettingsManager.SetMasterVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.MusicVolume), 0f, 100f, GameSettingsManager.MusicVolume*100,
+                    new SliderSetting(UIStringKey.MusicVolume, 0f, 100f, GameSettingsManager.MusicVolume*100,
                         v => { GameSettingsManager.SetMusicVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.SFXVolume), 0f, 100f, GameSettingsManager.SFXVolume*100,
+                    new SliderSetting(UIStringKey.SFXVolume, 0f, 100f, GameSettingsManager.SFXVolume*100,
                         v => { GameSettingsManager.SetSFXVolume(v/100); }),
-                    new SliderSetting(LocalizationHelper.GetUIText(UIStringKey.VoiceVolume), 0f, 100f, GameSettingsManager.VoiceVolume*100,
+                    new SliderSetting(UIStringKey.VoiceVolume, 0f, 100f, GameSettingsManager.VoiceVolume*100,
                         v => { GameSettingsManager.SetVoiceVolume(v/100); })
                 ),
                 new GroupContainerMenuItem("video", UIStringKey.Video, "",
-                    new DropdownSetting(
-                        LocalizationHelper.GetUIText(UIStringKey.Resolution),
+                    resolutionSetting = new DropdownSetting(
+                        UIStringKey.Resolution,
                         ResolutionSettingExtensions.GetResolutionList(),
                         ResolutionSettingExtensions.ToResolutionString(GameSettingsManager.ScreenResolution),
-                        val => { GameSettingsManager.SetScreenResolution(ResolutionSettingExtensions.ToResolutionSetting(val)); }),
+                        val =>
+                        {
+                            var prev = GameSettingsManager.ScreenResolution;
+                            var chosen = ResolutionSettingExtensions.ToResolutionSetting(val);
+                            if (prev == chosen)
+                                return;
+
+                            GameSettingsManager.SetScreenResolution(chosen);
+                            modal.ShowTimedConfirm(
+                                "Keep resolution?",
+                                "Reverting if not confirmed.",
+                                () => { GroupContainerMenuItem.ClearPendingChanges(); },
+                                () =>
+                                {
+                                    suppressResolutionPrompt = true;
+                                    resolutionSetting?.SetDisplayValue(ResolutionSettingExtensions.ToResolutionString(prev));
+                                    GameSettingsManager.SetScreenResolution(prev);
+                                    GroupContainerMenuItem.ClearPendingChanges();
+                                    suppressResolutionPrompt = false;
+                                });
+                        }),
                     new DropdownSetting(
-                        LocalizationHelper.GetUIText(UIStringKey.ScreenMode),
+                        UIStringKey.ScreenMode,
                         ScreenModeSettingExtensions.GetScreenModeList(),
                         ScreenModeSettingExtensions.ToScreenModeString(GameSettingsManager.ScreenMode),
                         val => { GameSettingsManager.SetScreenMode(ScreenModeSettingExtensions.ToScreenModeSetting(val)); })
@@ -142,7 +198,12 @@ public class PauseMenuController : MonoBehaviour
 
     private void UpdateLanguageDropdown(LanguageSetting lang)
     {
-        languageSetting?.SetValue(LanguageSettingExtensions.ToLanguageString(lang));
+        if (languageSetting != null)
+        {
+            suppressLanguagePrompt = true;
+            languageSetting.SetDisplayValue(LanguageSettingExtensions.ToLanguageString(lang));
+            suppressLanguagePrompt = false;
+        }
     }
 
     void Update()
@@ -166,6 +227,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void TogglePauseInternal()
     {
+        bool wasPaused = isPaused;
         isPaused = !isPaused;
 
         if (rootDoc != null)
@@ -185,6 +247,9 @@ public class PauseMenuController : MonoBehaviour
 
         uiBlocker?.SetBlocking(isPaused);
         cursor.SetState(CursorState.Normal);
+
+        if (!isPaused && wasPaused)
+            ResetMenuState();
     }
 
     // Optional resume button hook
@@ -210,6 +275,8 @@ public class PauseMenuController : MonoBehaviour
 
         uiBlocker?.SetBlocking(isPaused);
         cursor.SetState(CursorState.Normal);
+
+        ResetMenuState();
     }
 
     private void ExitLeafNode()

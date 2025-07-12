@@ -37,6 +37,10 @@
     font-size: 18px;
 }
 
+.timeout-label {
+    font-size: 16px;
+}
+
 .tier1-button {
     background-color: blue;
 }

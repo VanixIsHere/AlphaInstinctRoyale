@@ -1076,6 +1076,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GameSettingsManager: {fileID: 265417076}
   InGameMenuContainer: {fileID: 9197481963319205126, guid: 6cd1669432d0d8443868189027a75c04, type: 3}
+  InGameLocalizationToggle: {fileID: 9197481963319205126, guid: 4af205304b4b6de498465be8d7da13bc, type: 3}
 --- !u!4 &763311959
 Transform:
   m_ObjectHideFlags: 0
