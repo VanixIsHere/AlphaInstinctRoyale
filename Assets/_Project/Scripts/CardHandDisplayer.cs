@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,6 +11,8 @@ public class CardHandDisplayer : MonoBehaviour
     [SerializeField] private Camera cardCameraPrefab;
 
     private List<GameObject> cardsInHand = new();
+    private readonly Dictionary<int, string> layerNameCache = new();
+    private static readonly Vector3[] cornerBuffer = new Vector3[8];
 
     [Header("Layout Settings")]
     [SerializeField] public float distanceFromCamera = 2.5f;
@@ -65,6 +66,16 @@ public class CardHandDisplayer : MonoBehaviour
         LayoutCards();
     }
 
+    private string GetLayerName(int index)
+    {
+        if (!layerNameCache.TryGetValue(index, out var name))
+        {
+            name = "Card" + index.ToString();
+            layerNameCache[index] = name;
+        }
+        return name;
+    }
+
     float GetHandSizeScale()
     {
         if (layoutHandSize <= 1)
@@ -92,7 +103,7 @@ public class CardHandDisplayer : MonoBehaviour
         {
             var card = cardsInHand[i];
             var state = card.GetComponent<CardState>();
-            state.SetBaseRenderLayer($"Card{i}");
+            state.SetBaseRenderLayer(GetLayerName(i));
 
             if (state != null && (state.IsDragging || state.IsHovering))
             {
@@ -169,21 +180,18 @@ public class CardHandDisplayer : MonoBehaviour
             Vector3 c = b.center;
             Vector3 e = b.extents;
 
-            Vector3[] corners = new Vector3[8]
-            {
-                c + new Vector3(-e.x, -e.y, -e.z),
-                c + new Vector3(-e.x, -e.y,  e.z),
-                c + new Vector3(-e.x,  e.y, -e.z),
-                c + new Vector3(-e.x,  e.y,  e.z),
-                c + new Vector3( e.x, -e.y, -e.z),
-                c + new Vector3( e.x, -e.y,  e.z),
-                c + new Vector3( e.x,  e.y, -e.z),
-                c + new Vector3( e.x,  e.y,  e.z)
-            };
+            cornerBuffer[0] = c + new Vector3(-e.x, -e.y, -e.z);
+            cornerBuffer[1] = c + new Vector3(-e.x, -e.y,  e.z);
+            cornerBuffer[2] = c + new Vector3(-e.x,  e.y, -e.z);
+            cornerBuffer[3] = c + new Vector3(-e.x,  e.y,  e.z);
+            cornerBuffer[4] = c + new Vector3( e.x, -e.y, -e.z);
+            cornerBuffer[5] = c + new Vector3( e.x, -e.y,  e.z);
+            cornerBuffer[6] = c + new Vector3( e.x,  e.y, -e.z);
+            cornerBuffer[7] = c + new Vector3( e.x,  e.y,  e.z);
 
-            foreach (var corner in corners)
+            for (int j = 0; j < cornerBuffer.Length; j++)
             {
-                Vector3 sp = playerCamera.WorldToScreenPoint(corner);
+                Vector3 sp = playerCamera.WorldToScreenPoint(cornerBuffer[j]);
                 if (sp.z < 0f) continue;
                 if (first)
                 {
@@ -209,8 +217,16 @@ public class CardHandDisplayer : MonoBehaviour
 
     void UpdateHandLowerState()
     {
-        bool isAnyDragging = cardsInHand.Any(c => c.GetComponent<CardState>().IsDragging);
-        bool isAnyHovering = cardsInHand.Any(c => c.GetComponent<CardState>().IsHovering);
+        bool isAnyDragging = false;
+        bool isAnyHovering = false;
+        foreach (var card in cardsInHand)
+        {
+            var state = card.GetComponent<CardState>();
+            if (state == null) continue;
+            if (state.IsDragging) isAnyDragging = true;
+            if (state.IsHovering) isAnyHovering = true;
+            if (isAnyDragging && isAnyHovering) break;
+        }
 
         if (isAnyDragging || isAnyHovering || recentlyGenerated)
         {
@@ -274,7 +290,16 @@ public class CardHandDisplayer : MonoBehaviour
 
     private void UpdateCardLowering()
     {
-        bool isAnyCardDragging = cardsInHand.Any(card => card.GetComponent<CardState>().IsDragging);
+        bool isAnyCardDragging = false;
+        foreach (var card in cardsInHand)
+        {
+            var s = card.GetComponent<CardState>();
+            if (s != null && s.IsDragging)
+            {
+                isAnyCardDragging = true;
+                break;
+            }
+        }
 
         foreach (var card in cardsInHand)
         {
