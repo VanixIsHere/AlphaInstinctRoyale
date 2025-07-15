@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97269afb30aa84742ae3f3342603618a, type: 3}
-  m_Name: FontAsset_en-US
+  m_Name: FontAsset_Toolkit_ja
   m_EditorClassIdentifier: 
   m_LocaleId:
-    m_Code: en-US
-  m_SharedData: {fileID: 11400000, guid: 47c605d2d319b6348b97a6737c0b1796, type: 2}
+    m_Code: ja
+  m_SharedData: {fileID: 11400000, guid: 8029ccbb1400fc448a3560836e963bcc, type: 2}
   m_Metadata:
     m_Items: []
   m_TableData:
-  - m_Id: 14828855296
-    m_Localized: b86fafdb7ba7e734ab43c3c84406135d
+  - m_Id: 31694151680
+    m_Localized: b5fa4d88655811243b1cd64d4e49568d
     m_Metadata:
       m_Items: []
-  - m_Id: 184119353344
-    m_Localized: 198bae55d5eb5e64a85075253484b631
+  - m_Id: 79060426752
+    m_Localized: b5fa4d88655811243b1cd64d4e49568d
     m_Metadata:
       m_Items: []
   references:

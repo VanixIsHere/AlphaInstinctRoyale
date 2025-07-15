@@ -10,46 +10,46 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: FontAsset Shared Data
+  m_Name: FontAsset_Toolkit Shared Data
   m_EditorClassIdentifier: 
-  m_TableCollectionName: FontAsset
-  m_TableCollectionNameGuidString: 47c605d2d319b6348b97a6737c0b1796
+  m_TableCollectionName: FontAsset_Toolkit
+  m_TableCollectionNameGuidString: 8029ccbb1400fc448a3560836e963bcc
   m_Entries:
-  - m_Id: 14828855296
+  - m_Id: 31694151680
     m_Key: Font_Header
     m_Metadata:
       m_Items: []
-  - m_Id: 184119353344
+  - m_Id: 79060426752
     m_Key: Font_Standard
     m_Metadata:
       m_Items: []
   m_Metadata:
     m_Items:
-    - rid: 5768894604891127878
+    - rid: 5768894871362863178
   m_KeyGenerator:
-    rid: 5768894604891127877
+    rid: 5768894871362863174
   references:
     version: 2
     RefIds:
-    - rid: 5768894604891127877
+    - rid: 5768894871362863174
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1751588407450
-    - rid: 5768894604891127878
+        m_CustomEpoch: 1752587051780
+    - rid: 5768894871362863178
       type: {class: AssetTypeMetadata, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_Entries:
-        - m_KeyId: 14828855296
+        - m_KeyId: 31694151680
           m_TableCodes:
-          - en-US
           - zh-Hant
+          - en-US
           - ja
           - ko
-        - m_KeyId: 184119353344
+        - m_KeyId: 79060426752
           m_TableCodes:
-          - en-US
-          - zh-Hant
-          - ja
           - ko
-        m_TypeString: TMPro.TMP_FontAsset, Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral,
-          PublicKeyToken=null
+          - ja
+          - zh-Hant
+          - en-US
+        m_TypeString: UnityEngine.Font, UnityEngine.TextRenderingModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
