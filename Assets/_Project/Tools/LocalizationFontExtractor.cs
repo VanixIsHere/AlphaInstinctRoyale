@@ -6,6 +6,8 @@ using System.Linq;
 using UnityEngine.Localization;
 using System.Collections.Generic;
 
+#if UNITY_EDITOR
+
 public class LocalizationFontExtractor
 {
     [MenuItem("Tools/Localization/Export Text for Font Subsetting")]
@@ -55,3 +57,5 @@ public class LocalizationFontExtractor
         }
     }
 }
+
+#endif

@@ -16,7 +16,13 @@ MonoBehaviour:
   m_GUID: 552db99e524781a48bf161698907b009
   m_SerializeEntries:
   - m_GUID: 16c14c1c9fccb1b4bb69f1a4deb81385
-    m_Address: FontAsset_zh-Hant
+    m_Address: FontAsset_TMP_zh-Hant
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-zh-Hant
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb318e95124a85d4d95646ca25112e60
+    m_Address: FontAsset_Toolkit_zh-Hant
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-zh-Hant

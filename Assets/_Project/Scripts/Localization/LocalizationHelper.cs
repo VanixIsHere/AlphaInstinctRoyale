@@ -6,6 +6,8 @@ using UnityEngine.Localization.Components;
 using UnityEngine.UIElements;
 using TMPro;
 using Unity.VisualScripting;
+using System.ComponentModel;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public enum UIStringKey
 {
@@ -99,7 +101,7 @@ public static class LocalizationHelper
 
         var localizedString = new LocalizedString(UIStringsTableName, entryKey);
         var localizedFont = new LocalizedAsset<Font>();
-        localizedFont.TableReference = FontTableName;
+        localizedFont.TableReference = $"{FontTableName}_Toolkit";
         localizedFont.TableEntryReference = fontEntry;
 
         void UpdateText(string value) => element.text = value;
@@ -114,8 +116,14 @@ public static class LocalizationHelper
             localizedFont.AssetChanged -= UpdateFont;
         });
 
-        localizedFont.LoadAssetAsync();
-        localizedString.RefreshString();
+        var handle = localizedFont.LoadAssetAsync();
+        handle.Completed += op =>
+        {
+            if (op.Status == AsyncOperationStatus.Succeeded)
+            {
+                localizedString.RefreshString();
+            }
+        };
     }
 
     public static void LocalizeTMPText(TMP_Text textComponent, UIStringKey key, FontKey fontKey = FontKey.Standard)
@@ -134,7 +142,7 @@ public static class LocalizationHelper
 
         var localizedString = new LocalizedString(UIStringsTableName, entryKey);
         var localizedFont = new LocalizedAsset<TMP_FontAsset>();
-        localizedFont.TableReference = FontTableName;
+        localizedFont.TableReference = $"{FontTableName}_TMP";
         localizedFont.TableEntryReference = fontEntry;
 
         void UpdateText(string value) => textComponent.text = value;
@@ -151,7 +159,13 @@ public static class LocalizationHelper
         });
         */
 
-        localizedFont.LoadAssetAsync();
-        localizedString.RefreshString();
+        var handle = localizedFont.LoadAssetAsync();
+        handle.Completed += op =>
+        {
+            if (op.Status == AsyncOperationStatus.Succeeded)
+            {
+                localizedString.RefreshString();
+            }
+        };
     }
 }

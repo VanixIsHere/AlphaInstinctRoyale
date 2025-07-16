@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8029ccbb1400fc448a3560836e963bcc
+    m_Address: Assets/Localization/FontTable_Toolkit/FontAsset_Toolkit Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f366e823c7120db4a9fbaecb97113dae
     m_Address: Assets/Localization/UIStrings/UIStrings Shared Data.asset
     m_ReadOnly: 1

@@ -63,7 +63,7 @@ public class Submenu : IMenuItem
                 child.OnClick(layer, null, tier + 1);
             });
             if (child.LocalizationKey.HasValue)
-                LocalizationHelper.LocalizeTextElement(btn, child.LocalizationKey.Value);
+                LocalizationHelper.LocalizeTextElement(btn, child.LocalizationKey.Value, FontKey.Header);
             else
                 btn.text = child.Label;
 
@@ -181,7 +181,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
             root.Add(setting.Build());
         }
         var apply = new Button(() => { Apply(); });
-        LocalizationHelper.LocalizeTextElement(apply, UIStringKey.Apply);
+        LocalizationHelper.LocalizeTextElement(apply, UIStringKey.Apply, FontKey.Header);
         apply.AddToClassList("apply-button");
         root.Add(apply);
         return root;

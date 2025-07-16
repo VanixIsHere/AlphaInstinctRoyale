@@ -2,6 +2,8 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 
+#if UNITY_EDITOR
+
 [CustomPropertyDrawer(typeof(CreditEntry))]
 public class CreditEntryDrawer : PropertyDrawer {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -43,3 +45,5 @@ public class CreditsExporter {
         Application.OpenURL(filename);
     }
 }
+
+#endif

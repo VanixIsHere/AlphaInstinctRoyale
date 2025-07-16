@@ -182,7 +182,7 @@ public class PauseMenuController : MonoBehaviour
                 item.OnClick(elementContent, null, 2);
             });
             if (item.LocalizationKey.HasValue)
-                LocalizationHelper.LocalizeTextElement(btn, item.LocalizationKey.Value);
+                LocalizationHelper.LocalizeTextElement(btn, item.LocalizationKey.Value, FontKey.Header);
             else
                 btn.text = item.Label;
 

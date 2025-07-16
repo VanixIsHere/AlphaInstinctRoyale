@@ -21,6 +21,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-en-US
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99aa64e74788b924692400f92ce66e14
+    m_Address: NotoSans-Regular
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6f7083be3bc7674a87e5b88142cb079
+    m_Address: GermaniaOne-Regular
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b86fafdb7ba7e734ab43c3c84406135d
     m_Address: GermaniaOne-Regular SDF
     m_ReadOnly: 1

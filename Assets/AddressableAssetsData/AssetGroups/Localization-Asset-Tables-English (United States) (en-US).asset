@@ -16,7 +16,13 @@ MonoBehaviour:
   m_GUID: c718acbeab652fb409385aca38dd0901
   m_SerializeEntries:
   - m_GUID: 16b7b5ac7a2906d46bdd59ed1dd1437a
-    m_Address: FontAsset_en-US
+    m_Address: FontAsset_TMP_en-US
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b0386bec008eb24b9c116d07e258ccc
+    m_Address: FontAsset_Toolkit_en-US
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en-US
