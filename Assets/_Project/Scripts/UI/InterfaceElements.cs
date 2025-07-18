@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using GameSettings;
+using UnityEngine.UI;
+using Slider = UnityEngine.UIElements.Slider;
+using Toggle = UnityEngine.UIElements.Toggle;
+using Button = UnityEngine.UIElements.Button;
 
 public interface IMenuItem
 {
@@ -120,10 +125,10 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
     private readonly List<ISettingItem> _settings;
     private static ModalManager modal;
     private static GroupContainerMenuItem activePage;
-    private bool dirty;
+    private SettingsSaveMask pendingMask;
 
     public static GroupContainerMenuItem ActivePage => activePage;
-    public static bool ActivePageHasPending => activePage != null && activePage.dirty;
+    public static bool ActivePageHasPending => activePage != null && activePage.pendingMask != SettingsSaveMask.None;
 
     public static void ShowUnsavedPrompt(System.Action onContinue)
     {
@@ -153,16 +158,16 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
         activePage = null;
     }
 
-    internal static void NotifyChange()
+    internal static void NotifyChange(SettingsSaveMask mask)
     {
         if (activePage != null)
-            activePage.dirty = true;
+            activePage.pendingMask = mask;
     }
 
-    internal static void ClearPendingChanges()
+    internal static void ClearPendingChanges(SettingsSaveMask mask = SettingsSaveMask.All)
     {
         if (activePage != null)
-            activePage.dirty = false;
+            activePage.pendingMask &= ~mask; // Reset the bits in the pending mask
     }
 
     public GroupContainerMenuItem(string id, UIStringKey localizationKey, string styleClass = null, params ISettingItem[] settings)
@@ -203,19 +208,19 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
         scroll.Add(content);
 
         activePage = this;
-        dirty = false;
+        pendingMask = SettingsSaveMask.None;
     }
 
-    public bool HasPendingChanges => dirty;
+    public bool HasPendingChanges => pendingMask != SettingsSaveMask.None;
 
     public void Apply()
     {
         foreach (var setting in _settings)
             setting.Apply();
 
-        PauseMenuController.Instance.GameSettingsManager.SaveSettings();
+        PauseMenuController.Instance.GameSettingsManager.SaveSettings(pendingMask);
 
-        dirty = false;
+        pendingMask = SettingsSaveMask.None;
         Debug.Log($"Applied settings for {Label}");
     }
 
@@ -224,7 +229,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
         foreach (var setting in _settings)
             setting.Discard();
 
-        dirty = false;
+        pendingMask = SettingsSaveMask.None;
         Debug.Log($"Discarded settings for {Label}");
     }
 }
@@ -236,25 +241,28 @@ public class ToggleSetting : ISettingItem
     private bool initialValue;
     private bool currentValue;
     private readonly System.Action<bool> onChanged;
+    private readonly SettingsSaveMask mask;
 
     private Toggle toggle;
 
-    public ToggleSetting(UIStringKey labelKey, bool initialValue, System.Action<bool> onChanged)
+    public ToggleSetting(UIStringKey labelKey, bool initialValue, System.Action<bool> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = labelKey;
         this.label = null;
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
-    public ToggleSetting(string label, bool initialValue, System.Action<bool> onChanged)
+    public ToggleSetting(string label, bool initialValue, System.Action<bool> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = null;
         this.label = label;
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
     public VisualElement Build()
@@ -273,7 +281,7 @@ public class ToggleSetting : ISettingItem
         toggle.RegisterValueChangedCallback(evt => {
             currentValue = evt.newValue;
             onChanged?.Invoke(evt.newValue);
-            GroupContainerMenuItem.NotifyChange();
+            GroupContainerMenuItem.NotifyChange(mask);
         });
 
         container.Add(lbl);
@@ -304,10 +312,11 @@ public class DropdownSetting : ISettingItem
     private string initialValue;
     private string currentValue;
     private readonly System.Action<string> onChanged;
+    private readonly SettingsSaveMask mask;
 
     private DropdownField dropdownField;
 
-    public DropdownSetting(UIStringKey labelKey, List<string> options, string initialValue, System.Action<string> onChanged)
+    public DropdownSetting(UIStringKey labelKey, List<string> options, string initialValue, System.Action<string> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = labelKey;
         this.label = null;
@@ -315,9 +324,10 @@ public class DropdownSetting : ISettingItem
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
-    public DropdownSetting(string label, List<string> options, string initialValue, System.Action<string> onChanged)
+    public DropdownSetting(string label, List<string> options, string initialValue, System.Action<string> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = null;
         this.label = label;
@@ -325,6 +335,7 @@ public class DropdownSetting : ISettingItem
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
     public VisualElement Build()
@@ -342,7 +353,7 @@ public class DropdownSetting : ISettingItem
         dropdownField.RegisterValueChangedCallback(evt => {
             currentValue = evt.newValue;
             onChanged?.Invoke(evt.newValue);
-            GroupContainerMenuItem.NotifyChange();
+            GroupContainerMenuItem.NotifyChange(mask);
         });
 
         container.Add(lbl);
@@ -388,10 +399,11 @@ public class SliderSetting : ISettingItem
     private float initialValue;
     private float currentValue;
     private readonly System.Action<float> onChanged;
+    private readonly SettingsSaveMask mask;
 
     private Slider slider;
 
-    public SliderSetting(UIStringKey labelKey, float min, float max, float initialValue, System.Action<float> onChanged)
+    public SliderSetting(UIStringKey labelKey, float min, float max, float initialValue, System.Action<float> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = labelKey;
         this.label = null;
@@ -400,9 +412,10 @@ public class SliderSetting : ISettingItem
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
-    public SliderSetting(string label, float min, float max, float initialValue, System.Action<float> onChanged)
+    public SliderSetting(string label, float min, float max, float initialValue, System.Action<float> onChanged, SettingsSaveMask mask = SettingsSaveMask.None)
     {
         this.labelKey = null;
         this.label = label;
@@ -411,6 +424,7 @@ public class SliderSetting : ISettingItem
         this.initialValue = initialValue;
         this.currentValue = initialValue;
         this.onChanged = onChanged;
+        this.mask = mask;
     }
 
     public VisualElement Build()
@@ -428,7 +442,7 @@ public class SliderSetting : ISettingItem
         slider.RegisterValueChangedCallback(evt => {
             currentValue = evt.newValue;
             onChanged?.Invoke(evt.newValue);
-            GroupContainerMenuItem.NotifyChange();
+            GroupContainerMenuItem.NotifyChange(mask);
         });
 
         container.Add(lbl);

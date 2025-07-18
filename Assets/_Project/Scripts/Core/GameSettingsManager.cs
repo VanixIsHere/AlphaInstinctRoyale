@@ -42,20 +42,45 @@ public class GameSettingsManager : MonoBehaviour
         LoadSettings();
     }
 
-    public void SaveSettings()
+    public void SaveSettings(SettingsSaveMask mask = SettingsSaveMask.All)
     {
-        var data = new GameSettingsData
+        GameSettingsData data;
+        if (mask != SettingsSaveMask.All && File.Exists(SettingsFilePath))
         {
-            screenResolution = ScreenResolution,
-            screenMode = ScreenMode,
-            overallGraphicsQuality = OverallGraphicsQuality,
-            masterVolume = MasterVolume,
-            musicVolume = MusicVolume,
-            sfxVolume = SFXVolume,
-            voiceVolume = VoiceVolume,
-            language = Language,
-        };
+            try
+            {
+                string existing = File.ReadAllText(SettingsFilePath);
+                data = JsonUtility.FromJson<GameSettingsData>(existing);
+            }
+            catch
+            {
+                data = new GameSettingsData();
+            }
+        }
+        else
+        {
+            data = new GameSettingsData();
+        }
+
+        if (mask.HasFlag(SettingsSaveMask.ScreenResolution))
+            data.screenResolution = ScreenResolution;
+        if (mask.HasFlag(SettingsSaveMask.ScreenMode))
+            data.screenMode = ScreenMode;
+        if (mask.HasFlag(SettingsSaveMask.OverallGraphicsQuality))
+            data.overallGraphicsQuality = OverallGraphicsQuality;
+        if (mask.HasFlag(SettingsSaveMask.MasterVolume))
+            data.masterVolume = MasterVolume;
+        if (mask.HasFlag(SettingsSaveMask.MusicVolume))
+            data.musicVolume = MusicVolume;
+        if (mask.HasFlag(SettingsSaveMask.SFXVolume))
+            data.sfxVolume = SFXVolume;
+        if (mask.HasFlag(SettingsSaveMask.VoiceVolume))
+            data.voiceVolume = VoiceVolume;
+        if (mask.HasFlag(SettingsSaveMask.Language))
+            data.language = Language;
+
         string json = JsonUtility.ToJson(data, true);
+        Console.Write($"In SaveSettings: {data}");
         File.WriteAllText(SettingsFilePath, json);
     }
 
