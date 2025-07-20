@@ -161,7 +161,7 @@ public class GroupContainerMenuItem : IMenuItem, ISettingsPage
     internal static void NotifyChange(SettingsSaveMask mask)
     {
         if (activePage != null)
-            activePage.pendingMask = mask;
+            activePage.pendingMask |= mask;
     }
 
     internal static void ClearPendingChanges(SettingsSaveMask mask = SettingsSaveMask.All)

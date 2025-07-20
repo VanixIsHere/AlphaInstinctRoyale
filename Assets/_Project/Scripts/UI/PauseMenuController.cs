@@ -99,6 +99,7 @@ public class PauseMenuController : MonoBehaviour
                     "Reverting if not confirmed.",
                     () =>
                     {
+                        languageSetting?.Apply();
                         GroupContainerMenuItem.ClearPendingChanges(SettingsSaveMask.Language);
                         GameSettingsManager.SaveSettings(SettingsSaveMask.Language);
                     },
@@ -142,6 +143,7 @@ public class PauseMenuController : MonoBehaviour
                                 "Keep resolution?",
                                 "Reverting if not confirmed.",
                                 () => {
+                                    resolutionSetting?.Apply();
                                     GroupContainerMenuItem.ClearPendingChanges(SettingsSaveMask.ScreenResolution);
                                     GameSettingsManager.SaveSettings(SettingsSaveMask.ScreenResolution);
                                 },
