@@ -11,7 +11,18 @@ public class ModalManager : MonoBehaviour
 
     void Awake()
     {
-        root = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("ROOT");
+        // The UIDocument's visual tree might not be fully initialized during
+        // Awake when running a build. Delay grabbing the root until it is
+        // needed to avoid a null reference.
+        root = null;
+    }
+
+    private void EnsureRoot()
+    {
+        if (root == null)
+        {
+            root = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("ROOT");
+        }
     }
 
     public void ShowConfirm(string primaryLabel, string secondaryLabel, Action onConfirm, Action onCancel = null, string confirmText = "Confirm", string cancelText = "Cancel")
@@ -38,6 +49,7 @@ public class ModalManager : MonoBehaviour
 
     private void ShowConfirmInternal(string primaryLabel, string secondaryLabel, Action onConfirm, Action onCancel, string confirmText, string cancelText)
     {
+        EnsureRoot();
         activeModal = modalTemplate.CloneTree();
 
 
