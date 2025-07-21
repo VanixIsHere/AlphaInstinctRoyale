@@ -29,6 +29,23 @@ public class GameSettingsManager : MonoBehaviour
     /* GRAPHICS OPTIONS */
     public GraphicsQuality OverallGraphicsQuality { get; private set; }
 
+    private FullScreenMode ToUnityScreenMode(ScreenModeSetting mode)
+    {
+        return mode switch
+        {
+            ScreenModeSetting.Fullscreen => FullScreenMode.ExclusiveFullScreen,
+            ScreenModeSetting.BorderlessWindow => FullScreenMode.FullScreenWindow,
+            ScreenModeSetting.Windowed => FullScreenMode.Windowed,
+            _ => FullScreenMode.FullScreenWindow
+        };
+    }
+
+    private void ApplyVideoSettings()
+    {
+        Vector2Int dims = ScreenResolution.GetDimensions();
+        Screen.SetResolution(dims.x, dims.y, ToUnityScreenMode(ScreenMode));
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -108,6 +125,7 @@ public class GameSettingsManager : MonoBehaviour
                 if (locale != null)
                     LocalizationSettings.SelectedLocale = locale;
                 LanguageChanged?.Invoke(Language);
+                ApplyVideoSettings();
             }
             catch (Exception e)
             {
@@ -137,17 +155,20 @@ public class GameSettingsManager : MonoBehaviour
         if (locale != null)
             LocalizationSettings.SelectedLocale = locale;
         LanguageChanged?.Invoke(Language);
+        ApplyVideoSettings();
         SaveSettings();
     }
 
     public void SetScreenResolution(ResolutionSetting res)
     {
         ScreenResolution = res;
+        ApplyVideoSettings();
     }
 
     public void SetScreenMode(ScreenModeSetting mode)
     {
         ScreenMode = mode;
+        ApplyVideoSettings();
     }
 
     public void SetMasterVolume(float volume)
