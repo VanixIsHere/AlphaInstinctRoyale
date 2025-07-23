@@ -498,6 +498,8 @@ public static class UIUtils
         layer.AddToClassList($"tier{tier}-layer");
         layer.style.display = DisplayStyle.None;
         layer.style.justifyContent = Justify.Center;
+        layer.style.width = 0;
+        layer.style.minWidth = 0;
         parent.Add(layer);
 
         AdjustColumnFlex(parent);
@@ -506,6 +508,8 @@ public static class UIUtils
         int delay = removedCount > 0 ? 300 : 10;
         layer.schedule.Execute(() => {
             layer.style.display = DisplayStyle.Flex;
+            layer.style.width = 100;
+            layer.style.minWidth = 100;
             layer.AddToClassList("active");
         }).ExecuteLater(delay);
 

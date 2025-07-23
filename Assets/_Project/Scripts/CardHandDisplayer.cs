@@ -1,5 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using AudioSystem;
+using Unity.Collections.LowLevel.Unsafe;
+using System;
+using UnityUtils;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -41,9 +46,31 @@ public class CardHandDisplayer : MonoBehaviour
     [Header("Standup/Sitdown")]
     [SerializeField] private BoundaryPadding padding;
     [SerializeField] private bool showBoundaryGizmo = false;
+    public SoundData onHandStandupSoundEffect;
+    public SoundData onHandSitdownSoundEffect;
 
-    private bool handLowered = false;
-    public bool HandIsLowered => handLowered;
+    private bool isHandLowered = false;
+
+    public bool IsHandLowered
+    {
+        get => isHandLowered;
+        set
+        {
+            Debug.Log($"Is hand lowered {isHandLowered}");
+            if (isHandLowered != value)
+            {
+                if (value)
+                {
+                    AudioManager.Instance.CreateSound().WithSoundData(onHandStandupSoundEffect);
+                }
+                else
+                {
+                    AudioManager.Instance.CreateSound().WithSoundData(onHandSitdownSoundEffect);
+                }
+            }
+            isHandLowered = value;
+        }
+    }
 
     private Coroutine recentlyGeneratedStandupCoroutine;
     private bool recentlyGenerated = false;
@@ -181,13 +208,13 @@ public class CardHandDisplayer : MonoBehaviour
             Vector3 e = b.extents;
 
             cornerBuffer[0] = c + new Vector3(-e.x, -e.y, -e.z);
-            cornerBuffer[1] = c + new Vector3(-e.x, -e.y,  e.z);
-            cornerBuffer[2] = c + new Vector3(-e.x,  e.y, -e.z);
-            cornerBuffer[3] = c + new Vector3(-e.x,  e.y,  e.z);
-            cornerBuffer[4] = c + new Vector3( e.x, -e.y, -e.z);
-            cornerBuffer[5] = c + new Vector3( e.x, -e.y,  e.z);
-            cornerBuffer[6] = c + new Vector3( e.x,  e.y, -e.z);
-            cornerBuffer[7] = c + new Vector3( e.x,  e.y,  e.z);
+            cornerBuffer[1] = c + new Vector3(-e.x, -e.y, e.z);
+            cornerBuffer[2] = c + new Vector3(-e.x, e.y, -e.z);
+            cornerBuffer[3] = c + new Vector3(-e.x, e.y, e.z);
+            cornerBuffer[4] = c + new Vector3(e.x, -e.y, -e.z);
+            cornerBuffer[5] = c + new Vector3(e.x, -e.y, e.z);
+            cornerBuffer[6] = c + new Vector3(e.x, e.y, -e.z);
+            cornerBuffer[7] = c + new Vector3(e.x, e.y, e.z);
 
             for (int j = 0; j < cornerBuffer.Length; j++)
             {
@@ -230,7 +257,7 @@ public class CardHandDisplayer : MonoBehaviour
 
         if (isAnyDragging || isAnyHovering || recentlyGenerated)
         {
-            handLowered = false;
+            IsHandLowered = false;
         }
 
         Rect r = CalculateHandScreenRect();
@@ -242,7 +269,9 @@ public class CardHandDisplayer : MonoBehaviour
         Vector2 mouse = Input.mousePosition;
 
         if (r.width <= 0f || r.height <= 0f)
+        {
             return;
+        }
 
         bool mouseInRect = r.Contains(mouse);
 
@@ -256,7 +285,8 @@ public class CardHandDisplayer : MonoBehaviour
             return; // Wait until coroutine timer updates 'recentlyGenerated', or the user moves their mouse into the rect
         }
 
-        handLowered = !mouseInRect;
+        IsHandLowered = !mouseInRect;
+
     }
 
 #if UNITY_EDITOR
@@ -306,7 +336,8 @@ public class CardHandDisplayer : MonoBehaviour
             var state = card.GetComponent<CardState>();
             if (state == null) continue;
 
-            state.IsLowered = (isAnyCardDragging && !state.IsDragging) || handLowered;
+            var newIsLoweredState = (isAnyCardDragging && !state.IsDragging) || isHandLowered;
+            state.IsLowered = newIsLoweredState;
         }
     }
 

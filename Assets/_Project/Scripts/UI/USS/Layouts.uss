@@ -91,6 +91,8 @@
     padding: 6px;
     border-left-width: 0px;
     border-left-color: #555;
+    width: 100%;
+    min-width: 100%;
 }
 
 .apply-button {

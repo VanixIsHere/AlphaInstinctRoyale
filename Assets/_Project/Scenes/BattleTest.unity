@@ -1042,6 +1042,20 @@ MonoBehaviour:
     left: 0
     right: 0
   showBoundaryGizmo: 0
+  onHandStandupSoundEffect:
+    clip: {fileID: 8300000, guid: 2a8f54dde816b2d4194e3ad727cb9ad2, type: 3}
+    baseVolume: 0.591
+    mixerGroup: {fileID: -9142428403929620644, guid: 8359ae9e262d19245b12f167088de7b0, type: 2}
+    loop: 0
+    playOnAwake: 0
+    frequentSound: 0
+  onHandSitdownSoundEffect:
+    clip: {fileID: 8300000, guid: 0f9365ac06c79b641a6674ef4478e1b9, type: 3}
+    baseVolume: 0.571
+    mixerGroup: {fileID: -9142428403929620644, guid: 8359ae9e262d19245b12f167088de7b0, type: 2}
+    loop: 0
+    playOnAwake: 0
+    frequentSound: 0
 --- !u!1 &763311957
 GameObject:
   m_ObjectHideFlags: 0
@@ -2004,6 +2018,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1999538341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1999538342}
+  - component: {fileID: 1999538343}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1999538342
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999538341}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 736.22565, y: 426.04147, z: -37.25588}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1999538343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999538341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f227e15805f004e8ff34731e1ba89a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AutoUnparentOnAwake: 1
+  soundEmitterPrefab: {fileID: 7293286909007406488, guid: b81276d8bccfbb942ab3ff1d5c54addd, type: 3}
+  collectionCheck: 1
+  defaultCapacity: 10
+  maxPoolSize: 100
+  maxSoundInstances: 30
 --- !u!4 &1456793928364793965
 Transform:
   m_ObjectHideFlags: 0
@@ -2069,3 +2133,4 @@ SceneRoots:
   - {fileID: 763311959}
   - {fileID: 1456793928364793965}
   - {fileID: 265417077}
+  - {fileID: 1999538342}

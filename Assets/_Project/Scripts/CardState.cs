@@ -1,4 +1,5 @@
 using System;
+using AudioSystem;
 using UnityEngine;
 
 public class CardState : MonoBehaviour
@@ -16,6 +17,9 @@ public class CardState : MonoBehaviour
     [SerializeField] private int originalLayer;
     [SerializeField] private string focusedLayerName = "CardFocused";
 
+    [SerializeField] private SoundData hoverUpSoundEffect;
+    [SerializeField] private SoundData hoverDownSoundEffect;
+
     public bool IsDragging
     {
         get => isDragging;
@@ -25,7 +29,20 @@ public class CardState : MonoBehaviour
     public bool IsHovering
     {
         get => isHovering;
-        set => isHovering = value;
+        set
+        {
+            if (isHovering == value) return;
+            isHovering = value;
+
+            if (isHovering)
+            {
+                // AudioManager.Instance.CreateSound().WithSoundData(hoverUpSoundEffect).Play();
+            }
+            else
+            {
+                // AudioManager.Instance.CreateSound().WithSoundData(hoverDownSoundEffect).Play();
+            }
+        }
     }
 
     public bool IsLowered

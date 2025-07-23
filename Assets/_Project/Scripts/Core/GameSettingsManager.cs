@@ -48,6 +48,8 @@ public class GameSettingsManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log($"[{name}] Scene: {gameObject.scene.name} | Is persistent: {gameObject.scene.name == "DontDestroyOnLoad"}");
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
