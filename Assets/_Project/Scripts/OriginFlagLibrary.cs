@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using AIRBattleSimulation.Models;
 
 #if UNITY_EDITOR
 using UnityEditor;

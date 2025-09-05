@@ -21,7 +21,7 @@ public class Card3DView : MonoBehaviour
     [Header("Flag Related")]
     [SerializeField] private OriginFlagLibrary originFlagLibrary;
 
-    private UnitData data;
+    private UnitDataSO data;
     private MeshRenderer frontRenderer;
 
     void Awake()
@@ -42,7 +42,7 @@ public class Card3DView : MonoBehaviour
         frontRenderer.SetPropertyBlock(mpb);
     }
 
-    public void Init(UnitData unit)
+    public void Init(UnitDataSO unit)
     {
         data = unit;
 

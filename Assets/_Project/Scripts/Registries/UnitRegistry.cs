@@ -4,5 +4,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "UnitRegistry", menuName = "Alpha Instinct/UnitRegistry")]
 public class UnitRegistry : ScriptableObject
 {
-    public List<UnitData> units;
+    public List<UnitDataSO> units;
 }

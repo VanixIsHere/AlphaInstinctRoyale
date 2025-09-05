@@ -972,7 +972,7 @@ GameObject:
   - component: {fileID: 684586639}
   - component: {fileID: 684586640}
   m_Layer: 0
-  m_Name: DeckManager
+  m_Name: HandManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

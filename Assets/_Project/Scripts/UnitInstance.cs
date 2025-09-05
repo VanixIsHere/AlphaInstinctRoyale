@@ -1,12 +1,13 @@
 using UnityEngine;
+using AIRBattleSimulation;
 
 public class UnitInstance : MonoBehaviour
 {
-    public UnitData data;
+    public UnitDataSO data;
     public int level = 1;
     public int currentHealth;
 
-    public void Init(UnitData unitData, int level = 1)
+    public void Init(UnitDataSO unitData, int level = 1)
     {
         data = unitData;
         this.level = level;

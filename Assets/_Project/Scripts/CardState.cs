@@ -7,7 +7,6 @@ public class CardState : MonoBehaviour
     [Header("Runtime State")]
     [SerializeField] private bool isDragging = false;
     [SerializeField] private bool isHovering = false;
-    [SerializeField] private bool isLowered = false;
 
     [Tooltip("The default world position based on hand layout.")]
     [SerializeField] private Vector3 handAnchorPosition = Vector3.zero;
@@ -33,22 +32,7 @@ public class CardState : MonoBehaviour
         {
             if (isHovering == value) return;
             isHovering = value;
-
-            if (isHovering)
-            {
-                // AudioManager.Instance.CreateSound().WithSoundData(hoverUpSoundEffect).Play();
-            }
-            else
-            {
-                // AudioManager.Instance.CreateSound().WithSoundData(hoverDownSoundEffect).Play();
-            }
         }
-    }
-
-    public bool IsLowered
-    {
-        get => isLowered;
-        set => isLowered = value;
     }
 
     public Vector3 HandAnchorPosition

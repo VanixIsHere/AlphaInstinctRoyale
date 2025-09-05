@@ -5,9 +5,9 @@ public class CardUI : MonoBehaviour
 {
     public Image artwork;
     public TMPro.TextMeshProUGUI nameText;
-    private UnitData data;
+    private UnitDataSO data;
 
-    public void Init(UnitData unit)
+    public void Init(UnitDataSO unit)
     {
         data = unit;
 

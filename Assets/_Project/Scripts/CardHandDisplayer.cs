@@ -4,6 +4,10 @@ using AudioSystem;
 using Unity.Collections.LowLevel.Unsafe;
 using System;
 using UnityUtils;
+using CardSystem;
+using System.Linq;
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -11,11 +15,12 @@ using UnityEditor;
 
 public class CardHandDisplayer : MonoBehaviour
 {
+    private HandManager handManager;
+
     [Header("Camera References")]
     public Camera playerCamera;
     [SerializeField] private Camera cardCameraPrefab;
 
-    private List<GameObject> cardsInHand = new();
     private readonly Dictionary<int, string> layerNameCache = new();
     private static readonly Vector3[] cornerBuffer = new Vector3[8];
 
@@ -56,16 +61,20 @@ public class CardHandDisplayer : MonoBehaviour
         get => isHandLowered;
         set
         {
-            Debug.Log($"Is hand lowered {isHandLowered}");
             if (isHandLowered != value)
             {
-                if (value)
+                Debug.Log($"Hand lowered value change {isHandLowered}");
+                if (handManager.draggedCards.Count == 0)
                 {
-                    AudioManager.Instance.CreateSound().WithSoundData(onHandStandupSoundEffect);
-                }
-                else
-                {
-                    AudioManager.Instance.CreateSound().WithSoundData(onHandSitdownSoundEffect);
+                    // ONLY PLAY SOUND EFFECTS IF NO CARDS ARE BEING DRAGGED
+                    if (value)
+                    {
+                        AudioManager.Instance.CreateSound().WithSoundData(onHandSitdownSoundEffect).Play();
+                    }
+                    else
+                    {
+                        AudioManager.Instance.CreateSound().WithSoundData(onHandStandupSoundEffect).Play();
+                    }
                 }
             }
             isHandLowered = value;
@@ -80,17 +89,15 @@ public class CardHandDisplayer : MonoBehaviour
         layoutHandSize = Mathf.Max(1, size);
     }
 
+    void Awake()
+    {
+        handManager = gameObject.GetComponent<HandManager>();
+    } 
+
     void Update()
     {
         LayoutCards();
         UpdateHandLowerState();
-        UpdateCardLowering();
-    }
-
-    public void SetCards(List<GameObject> cards)
-    {
-        cardsInHand = cards;
-        LayoutCards();
     }
 
     private string GetLayerName(int index)
@@ -107,14 +114,14 @@ public class CardHandDisplayer : MonoBehaviour
     {
         if (layoutHandSize <= 1)
             return 1f;
-        return (cardsInHand.Count - 1f) / (layoutHandSize - 1f);
+        return (handManager.Hand.Count - 1f) / (layoutHandSize - 1f);
     }
 
     public void LayoutCards()
     {
-        if (playerCamera == null || cardsInHand.Count == 0) return;
+        if (playerCamera == null || handManager.Hand.Count == 0) return;
 
-        float totalWidth = (cardsInHand.Count - 1) * spacing;
+        float totalWidth = (handManager.Hand.Count - 1) * spacing;
 
         // Ray direction and base point
         Vector3 rayOrigin = playerCamera.transform.position;
@@ -126,9 +133,9 @@ public class CardHandDisplayer : MonoBehaviour
 
         float sizeScale = GetHandSizeScale();
 
-        for (int i = 0; i < cardsInHand.Count; i++)
+        for (int i = 0; i < handManager.Hand.Count; i++)
         {
-            var card = cardsInHand[i];
+            var card = handManager.HandGameObjects[i];
             var state = card.GetComponent<CardState>();
             state.SetBaseRenderLayer(GetLayerName(i));
 
@@ -144,8 +151,8 @@ public class CardHandDisplayer : MonoBehaviour
 
     void LayoutSingleCard(CardState state, int index, float totalWidth, Vector3 centerPoint, float sizeScale)
     {
-        float middleIndex = (cardsInHand.Count - 1) / 2f;
-        float normalizedIndex = (cardsInHand.Count == 1) ? 0f : (index - middleIndex) / middleIndex;
+        float middleIndex = (handManager.Hand.Count - 1) / 2f;
+        float normalizedIndex = (handManager.Hand.Count == 1) ? 0f : (index - middleIndex) / middleIndex;
 
         float offsetX = (index * spacing) - (totalWidth * 0.5f);
         Vector3 rightOffset = playerCamera.transform.right * offsetX;
@@ -192,13 +199,13 @@ public class CardHandDisplayer : MonoBehaviour
 
     Rect CalculateHandScreenRect()
     {
-        if (playerCamera == null || cardsInHand.Count == 0)
+        if (playerCamera == null || handManager.Hand.Count == 0)
             return new Rect();
 
         bool first = true;
         float minX = 0f, minY = 0f, maxX = 0f, maxY = 0f;
 
-        foreach (var card in cardsInHand)
+        foreach (var card in handManager.HandGameObjects)
         {
             Renderer rend = card.GetComponentInChildren<Renderer>();
             if (rend == null) continue;
@@ -244,18 +251,26 @@ public class CardHandDisplayer : MonoBehaviour
 
     void UpdateHandLowerState()
     {
-        bool isAnyDragging = false;
+        bool dragHappening = handManager.draggedCards.Count > 0;
+        if (recentlyGenerated && dragHappening && recentlyGeneratedStandupCoroutine != null)
+        {
+            recentlyGenerated = false;
+            StopCoroutine(recentlyGeneratedStandupCoroutine);
+        }
+        if (dragHappening) {
+            isHandLowered = true;
+            return;
+        }
         bool isAnyHovering = false;
-        foreach (var card in cardsInHand)
+        foreach (var card in handManager.HandGameObjects)
         {
             var state = card.GetComponent<CardState>();
             if (state == null) continue;
-            if (state.IsDragging) isAnyDragging = true;
             if (state.IsHovering) isAnyHovering = true;
-            if (isAnyDragging && isAnyHovering) break;
+            if (isAnyHovering) break;
         }
 
-        if (isAnyDragging || isAnyHovering || recentlyGenerated)
+        if (isAnyHovering || recentlyGenerated)
         {
             IsHandLowered = false;
         }
@@ -285,6 +300,7 @@ public class CardHandDisplayer : MonoBehaviour
             return; // Wait until coroutine timer updates 'recentlyGenerated', or the user moves their mouse into the rect
         }
 
+        Debug.Log($"Updating dangerous ${!mouseInRect}");
         IsHandLowered = !mouseInRect;
 
     }
@@ -317,29 +333,6 @@ public class CardHandDisplayer : MonoBehaviour
         Handles.DrawLine(lb, lt);
     }
 #endif
-
-    private void UpdateCardLowering()
-    {
-        bool isAnyCardDragging = false;
-        foreach (var card in cardsInHand)
-        {
-            var s = card.GetComponent<CardState>();
-            if (s != null && s.IsDragging)
-            {
-                isAnyCardDragging = true;
-                break;
-            }
-        }
-
-        foreach (var card in cardsInHand)
-        {
-            var state = card.GetComponent<CardState>();
-            if (state == null) continue;
-
-            var newIsLoweredState = (isAnyCardDragging && !state.IsDragging) || isHandLowered;
-            state.IsLowered = newIsLoweredState;
-        }
-    }
 
     public void HandleRecentGenerationStandup()
     {
