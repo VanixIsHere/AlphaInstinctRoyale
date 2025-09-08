@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Tiger
   m_EditorClassIdentifier: 
-  unitName: Tiger
+  unitKey: Tiger
   cardArtwork: {fileID: 2800000, guid: b399912ad6e539d4a83a79332a47952c, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 60
-  baseAttack: 18
-  baseSpeed: 3
-  baseRange: 1
-  cost: 3
-  rarity: 3
-  role: 12
-  origin: 2

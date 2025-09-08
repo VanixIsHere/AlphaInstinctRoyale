@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Moose
   m_EditorClassIdentifier: 
-  unitName: Moose
+  unitKey: Moose
   cardArtwork: {fileID: 2800000, guid: 553428c490c5d8c4f9540dd5ec640b92, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 100
-  baseAttack: 20
-  baseSpeed: 1
-  baseRange: 1
-  cost: 2
-  rarity: 1
-  role: 1
-  origin: 1

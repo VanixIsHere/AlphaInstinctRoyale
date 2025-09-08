@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: WaterDeer
   m_EditorClassIdentifier: 
-  unitName: Water Deer
+  unitKey: Water Deer
   cardArtwork: {fileID: 2800000, guid: 34966692d9bd7734692c36f7a8af6472, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 55
-  baseAttack: 24
-  baseSpeed: 3
-  baseRange: 2
-  cost: 3
-  rarity: 3
-  role: 6
-  origin: 4

@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: AidoHwedo
   m_EditorClassIdentifier: 
-  unitName: Aido-Hwedo
+  unitKey: Aido-Hwedo
   cardArtwork: {fileID: 2800000, guid: f3578a55fa9803b4f8395766a4c2412d, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 85
-  baseAttack: 20
-  baseSpeed: 2
-  baseRange: 3
-  cost: 5
-  rarity: 5
-  role: 5
-  origin: 13

@@ -236,7 +236,7 @@ namespace CardSystem
             }
             Card card = hand[index];
 
-            UnitDataSO data = HandUnitData[index];
+            UnitDataSO unit = HandUnitData[index];
             BenchManager bench = FindFirstObjectByType<BenchManager>();
 
             if (bench == null)
@@ -244,25 +244,25 @@ namespace CardSystem
                 Debug.LogError("BenchManager not found");
             }
 
-            if (!bench.CanAdd(data))
+            if (!bench.CanAdd(unit))
             {
                 Debug.Log("Cannot play card: Bench is full or merge conditions unmet");
                 return;
             }
 
-            if (GameManager.Instance.gold < data.cost)
+            if (GameManager.Instance.gold < unit.Data.Cost)
             {
                 Debug.Log("Not enough gold to play card");
                 return;
             }
 
-            GameManager.Instance.gold -= data.cost;
+            GameManager.Instance.gold -= unit.Data.Cost;
             GameManager.Instance.UpdateUI();
 
-            if (!bench.TryAddToBench(data))
+            if (!bench.TryAddToBench(unit))
             {
                 Debug.LogWarning("Failed to add unit to bench despite pre-check");
-                GameManager.Instance.gold += data.cost; // revert
+                GameManager.Instance.gold += unit.Data.Cost; // revert
                 GameManager.Instance.UpdateUI();
                 return;
             }

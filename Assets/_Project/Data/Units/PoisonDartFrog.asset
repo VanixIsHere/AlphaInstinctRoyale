@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: PoisonDartFrog
   m_EditorClassIdentifier: 
-  unitName: Poison Dart Frog
+  unitKey: Poison Dart Frog
   cardArtwork: {fileID: 2800000, guid: 04c0dd1c8d56fbb4e92da489d545e5bd, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 50
-  baseAttack: 10
-  baseSpeed: 3
-  baseRange: 3
-  cost: 2
-  rarity: 2
-  role: 21
-  origin: 6

@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Fox
   m_EditorClassIdentifier: 
-  unitName: Fox
+  unitKey: Fox
   cardArtwork: {fileID: 2800000, guid: 1a0a44d724ebfcb4f81b653a0f17706b, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 50
-  baseAttack: 22
-  baseSpeed: 4
-  baseRange: 1
-  cost: 3
-  rarity: 3
-  role: 11
-  origin: 5

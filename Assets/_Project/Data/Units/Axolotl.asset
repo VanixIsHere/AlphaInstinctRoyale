@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Axolotl
   m_EditorClassIdentifier: 
-  unitName: Axolotl
+  unitKey: Axolotl
   cardArtwork: {fileID: 2800000, guid: a6f0dacde6134be46ac8c2da4b814002, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 65
-  baseAttack: 5
-  baseSpeed: 2
-  baseRange: 2
-  cost: 2
-  rarity: 2
-  role: 7
-  origin: 12

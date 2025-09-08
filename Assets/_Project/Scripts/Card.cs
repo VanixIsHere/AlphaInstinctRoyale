@@ -17,8 +17,6 @@ namespace CardSystem
         // Card data (could be a ScriptableObject or just properties)
         public UnitDataSO Unit { get; private set; }
 
-        public UnitDataSO cameraLayer { get; private set; }
-
         private string focusedLayerName = "CardFocused";
 
         public Card(UnitDataSO data, GameObject prefab, Transform parent, Vector3 spawnPosition, int layerMask, HandManager manager)

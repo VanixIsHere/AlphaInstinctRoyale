@@ -57,7 +57,7 @@ public class UnitPoolManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             int rarity = RollRarity(table);
-            var eligible = allUnits.FindAll(u => u.rarity == rarity);
+            var eligible = allUnits.FindAll(u => u.Data.Rarity == rarity);
 
             if (eligible.Count > 0)
             {

@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Elephant
   m_EditorClassIdentifier: 
-  unitName: Elephant
+  unitKey: Elephant
   cardArtwork: {fileID: 2800000, guid: c8aac61864222a544aee40831802f4f5, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 150
-  baseAttack: 12
-  baseSpeed: 1
-  baseRange: 1
-  cost: 3
-  rarity: 1
-  role: 15
-  origin: 7
