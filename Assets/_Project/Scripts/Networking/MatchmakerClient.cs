@@ -5,17 +5,24 @@ using System.Collections;
 
 public class MatchmakerClient : MonoBehaviour
 {
-    [SerializeField] private string serverUrl = "https://localhost:7084/matchmaking/join";
-    [SerializeField] private string playerId;
+    private string mmUrl;
+    private string playerId;
     [SerializeField] private TMP_Text responseText;
+
+    private int _id;
 
     void Awake()
     {
+        _id = GetInstanceID();
+        mmUrl = $"{Env.MatchmakingUrlBase}/matchmaking/join";
+        Debug.Log($"Awaking with url '{mmUrl}'.");
         playerId = "Player_" + Random.Range(1000, 9999);
+        Debug.Log($"[{name}#{_id}] Awake. Base='{Env.MatchmakingUrlBase}' Join='{mmUrl}'");
     }
 
     public void JoinMatchmaking()
     {
+        Debug.Log($"Sending Join Request to '{mmUrl}'.");
         StartCoroutine(SendJoinRequest());
     }
 
@@ -24,7 +31,7 @@ public class MatchmakerClient : MonoBehaviour
         var payload = new JoinPayload { playerId = playerId, MMR = 1200 };
         string json = JsonUtility.ToJson(payload);
 
-        using var request = new UnityWebRequest(serverUrl, "POST");
+        using var request = new UnityWebRequest(mmUrl, "POST");
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();

@@ -942,8 +942,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f00ff3e18a2c6cc41a0d64cff03d2638, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverUrl: https://localhost:7084/matchmaking/join
-  playerId: 
   responseText: {fileID: 0}
 --- !u!4 &641969852
 Transform:
@@ -1069,6 +1067,7 @@ GameObject:
   - component: {fileID: 763311960}
   - component: {fileID: 763311961}
   - component: {fileID: 763311962}
+  - component: {fileID: 763311963}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -1150,6 +1149,19 @@ MonoBehaviour:
   m_WorldSpaceSizeMode: 1
   m_WorldSpaceWidth: 1920
   m_WorldSpaceHeight: 1080
+--- !u!114 &763311963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763311957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f00ff3e18a2c6cc41a0d64cff03d2638, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  responseText: {fileID: 0}
 --- !u!1 &844186155
 GameObject:
   m_ObjectHideFlags: 0

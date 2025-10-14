@@ -280,7 +280,11 @@ public class PauseMenuController : MonoBehaviour
 
     private void HandleAttemptMatchmaking()
     {
-        // JoinMatchmaking();
+        var mmClient = gameObject.GetComponent<MatchmakerClient>();
+        if (mmClient)
+        {
+            mmClient.JoinMatchmaking();
+        }
     }
 
     private void HandleQuit()

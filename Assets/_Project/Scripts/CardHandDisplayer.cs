@@ -300,7 +300,7 @@ public class CardHandDisplayer : MonoBehaviour
             return; // Wait until coroutine timer updates 'recentlyGenerated', or the user moves their mouse into the rect
         }
 
-        Debug.Log($"Updating dangerous ${!mouseInRect}");
+        // Debug.Log($"Updating dangerous ${!mouseInRect}");
         IsHandLowered = !mouseInRect;
 
     }
