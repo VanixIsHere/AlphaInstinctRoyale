@@ -26,6 +26,11 @@
 
 This game is currently in active development. Art, networking, and balance are in progress. Feedback and playtesting will guide ongoing iteration.
 
+## Repo Setup
+1. Using Unity Package Manager, install 'NuGetForUnity' via git URL. Update it to the latest version.
+2. Using NuGet within Unity, install:
+    a. Microsoft.AspNetCore.SignalR.Client
+
 ### UI Setup
 
 The pause menu relies on `ModalManager` and `GroupContainerMenuItem` for settings pages.

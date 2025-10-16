@@ -83,3 +83,6 @@ crashlytics-build.properties
 /Automation/LocalizationSubsetting/Logs/*
 /Automation/LocalizationSubsetting/OriginalFonts/*
 /Automation/LocalizationSubsetting/SubsetFonts/*
+
+# Do not push packages or any other built binaries
+/Assets/Packages

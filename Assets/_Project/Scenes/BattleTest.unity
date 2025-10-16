@@ -943,6 +943,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   responseText: {fileID: 0}
+  mode: 1
+  mmr: 1200
+  queueType: Casual
+  lobbySize: Small
 --- !u!4 &641969852
 Transform:
   m_ObjectHideFlags: 0
@@ -1162,6 +1166,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   responseText: {fileID: 0}
+  mode: 0
+  mmr: 1200
+  queueType: Casual
+  lobbySize: Small
 --- !u!1 &844186155
 GameObject:
   m_ObjectHideFlags: 0
