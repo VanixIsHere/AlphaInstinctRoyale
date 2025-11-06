@@ -9,7 +9,7 @@ public class EnvironmentalConfig : ScriptableObject
     public void Initialize()
     {
 #if UNITY_EDITOR
-        MatchmakingUrlBase = "http://localhost:7084";
+        MatchmakingUrlBase = "https://localhost:7084";
 #else
         if (Debug.isDebugBuild)
         {

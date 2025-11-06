@@ -62,7 +62,6 @@ public class Card3DView : MonoBehaviour
             {
                 Debug.LogWarning($"Could not find a country flag for {unit.Data.Origin}.");
             }
-            Debug.Log("Shader name: " + frontRenderer.material.shader.name);
         }
 
         // NAME

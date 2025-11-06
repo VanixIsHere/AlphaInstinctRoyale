@@ -86,3 +86,6 @@ crashlytics-build.properties
 
 # Do not push packages or any other built binaries
 /Assets/Packages
+
+# Ignore managed plugin binaries placed locally
+/Assets/Plugins/**/*.dll

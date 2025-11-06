@@ -63,7 +63,7 @@ public class CardHandDisplayer : MonoBehaviour
         {
             if (isHandLowered != value)
             {
-                Debug.Log($"Hand lowered value change {isHandLowered}");
+                // Debug.Log($"Hand lowered value change {isHandLowered}");
                 if (handManager.draggedCards.Count == 0)
                 {
                     // ONLY PLAY SOUND EFFECTS IF NO CARDS ARE BEING DRAGGED

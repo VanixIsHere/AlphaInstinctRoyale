@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AIRBattleSimulation</name>
+    </assembly>
+    <members>
+        <member name="T:AIRBattleSimulation.Data.UnitDatabase">
+            <summary>
+            In-memory database of available <see cref="T:AIRBattleSimulation.UnitDefinition"/> entries used by the simulation.
+            </summary>
+        </member>
+        <member name="M:AIRBattleSimulation.Data.UnitDatabase.Get(System.String)">
+            <summary>
+            Gets a unit definition by name.
+            </summary>
+            <param name="unitName">The unit name key.</param>
+            <returns>The <see cref="T:AIRBattleSimulation.UnitDefinition"/> if found; otherwise <c>null</c>.</returns>
+        </member>
+        <member name="M:AIRBattleSimulation.Data.UnitDatabase.GetAll">
+            <summary>
+            Returns all unit definitions.
+            </summary>
+            <returns>An enumerable of all <see cref="T:AIRBattleSimulation.UnitDefinition"/> values.</returns>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitClass">
+            <summary>
+            Broad unit classification used for balancing and synergies.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Melee">
+            <summary>Close-quarters combat specialists.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Ranged">
+            <summary>Distance damage dealers using ranged attacks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Magic">
+            <summary>Ability-driven or arcane-style units.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Support">
+            <summary>Buffing, healing, or supportive utility units.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Flank">
+            <summary>Mobile skirmishers focusing on flanks and picks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Tech">
+            <summary>Technology and gadgets oriented units.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitOrigin">
+            <summary>
+            Thematic origin or region associated with a unit.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.USA">
+            <summary>Origin: United States.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Canada">
+            <summary>Origin: Canada.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.China">
+            <summary>Origin: China.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Taiwan">
+            <summary>Origin: Taiwan.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Korea">
+            <summary>Origin: Korea.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Japan">
+            <summary>Origin: Japan.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Brazil">
+            <summary>Origin: Brazil.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.India">
+            <summary>Origin: India.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.UK">
+            <summary>Origin: United Kingdom.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Egypt">
+            <summary>Origin: Egypt.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Switzerland">
+            <summary>Origin: Switzerland.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Russia">
+            <summary>Origin: Russia.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Mexico">
+            <summary>Origin: Mexico.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Benin">
+            <summary>Origin: Benin.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Australia">
+            <summary>Origin: Australia.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Thailand">
+            <summary>Origin: Thailand.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.France">
+            <summary>Origin: France.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitRole">
+            <summary>
+            Fine-grained battlefield role describing a unit's primary function.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Vanguard">
+            <summary>Frontline initiator and protector.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bruiser">
+            <summary>Durable melee damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Enforcer">
+            <summary>Hard-control enforcer of front lines.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bulwark">
+            <summary>High-durability defensive specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Marksman">
+            <summary>Precision ranged damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Voidcaller">
+            <summary>Summoner or void-based caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Blaster">
+            <summary>Explosive burst damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Healer">
+            <summary>Healing and sustain provider.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Augmenter">
+            <summary>Stat/ability enhancer for allies.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Controller">
+            <summary>Crowd control and zone manipulation.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Wardkeeper">
+            <summary>Vision and warding specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Infiltrator">
+            <summary>Stealthy backline diver.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bleeder">
+            <summary>Damage-over-time specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Engineer">
+            <summary>Utility and device-focused operator.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Disruptor">
+            <summary>Disrupts enemy setups and channels.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Guardian">
+            <summary>Protective tank and bodyguard.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Volleyer">
+            <summary>Volley-style ranged attacker.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Snarecaster">
+            <summary>Snaring and rooting caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Harrier">
+            <summary>Harassment and kiting specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Invoker">
+            <summary>High-impact ability caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Channeler">
+            <summary>Sustained channeling spell user.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Venomancer">
+            <summary>Poison and debuff specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Lurker">
+            <summary>Ambusher that lurks for picks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Striker">
+            <summary>High mobility melee finisher.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Operator">
+            <summary>Field operations and tactical utility.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Augmentalist">
+            <summary>Advanced augmenter with tech focus.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Supportbot">
+            <summary>Support-focused automation unit.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitRoleExtensions">
+            <summary>
+            Extension helpers for translating roles to their broader unit classes.
+            </summary>
+        </member>
+        <member name="M:AIRBattleSimulation.Models.UnitRoleExtensions.GetClass(AIRBattleSimulation.Models.UnitRole)">
+            <summary>
+            Gets the <see cref="T:AIRBattleSimulation.Models.UnitClass"/> associated with the specified <see cref="T:AIRBattleSimulation.Models.UnitRole"/>.
+            </summary>
+            <param name="role">The role to translate.</param>
+            <returns>The mapped <see cref="T:AIRBattleSimulation.Models.UnitClass"/>.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when the role is not mapped.</exception>
+        </member>
+        <member name="T:AIRBattleSimulation.UnitDefinition">
+            <summary>
+            Defines a unit's identity, base statistics, and traits used by the battle simulation.
+            </summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.UnitName">
+            <summary>The display name of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseHealth">
+            <summary>Base health points of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseAttack">
+            <summary>Base attack damage of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseSpeed">
+            <summary>Base movement speed of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseRange">
+            <summary>Base attack range of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Cost">
+            <summary>Shop or draft cost associated with the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Rarity">
+            <summary>Rarity tier of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Role">
+            <summary>The unit's primary battlefield role.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Origin">
+            <summary>The origin or region associated with the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Class">
+            <summary>
+            The broader class derived from the unit's <see cref="P:AIRBattleSimulation.UnitDefinition.Role"/>.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest">
+            <summary>
+            Request body sent by a client to join the matchmaking queue.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.PlayerId">
+            <summary>
+            Unique identifier for the player requesting to join the queue.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.MMR">
+            <summary>
+            Player matchmaking rating. Reserved for future use in matching.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.QueueType">
+            <summary>
+            Desired queue type (e.g., Casual or Ranked).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.LobbySize">
+            <summary>
+            Desired lobby size preference for matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotFill">
+            <summary>
+            When true, requester wants the lobby filled with bots up to capacity (e.g., solo vs bots).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotCount">
+            <summary>
+            Optional explicit number of bots requested (0..capacity-1). When provided and &gt; 0, takes precedence over <see cref="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotFill"/>.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.LobbySize">
+            <summary>
+            Indicates the preferred capacity tier of the target lobby.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Small">
+            <summary>Small-sized lobby preference.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Medium">
+            <summary>Medium-sized lobby preference.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Large">
+            <summary>Large-sized lobby preference.</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueType">
+            <summary>
+            Matchmaking queue type.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueType.Casual">
+            <summary>Casual queue (non-ranked matchmaking).</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueType.Ranked">
+            <summary>Ranked queue (MMR-based matchmaking).</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueStatus">
+            <summary>
+            Lifecycle state of a queue ticket within the matchmaking system.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Queued">
+            <summary>The ticket is active and waiting to be matched.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Cancelled">
+            <summary>The ticket was cancelled (user or system initiated).</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Expired">
+            <summary>The ticket expired due to inactivity or timeout.</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueEntry">
+            <summary>
+            Server-side representation of a player's enqueued matchmaking ticket.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.TicketId">
+            <summary>
+            Unique ticket identifier generated at enqueue time.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.PlayerId">
+            <summary>
+            Identifier of the player who owns this ticket.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.MMR">
+            <summary>
+            Player matchmaking rating used for ranked matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.QueueType">
+            <summary>
+            Queue type selected for this ticket (e.g., Casual or Ranked).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.LobbySize">
+            <summary>
+            Lobby size preference for matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotFill">
+            <summary>
+            If true, fill remaining lobby slots with bots up to capacity.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotCount">
+            <summary>
+            Explicit number of bots requested (0..capacity-1). When set and &gt; 0, overrides <see cref="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotFill"/>.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.EnqueuedAtUtc">
+            <summary>
+            UTC timestamp when the ticket was enqueued.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.LastSeenAtUtc">
+            <summary>
+            UTC timestamp of the last heartbeat or observed activity.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.Status">
+            <summary>
+            Current lifecycle status of the ticket.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueEntry.ToRequest">
+            <summary>
+            Creates a <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> projecting the player's original request values.
+            </summary>
+            <returns>A request DTO representing the ticket's original join parameters.</returns>
+        </member>
+    </members>
+</doc>
