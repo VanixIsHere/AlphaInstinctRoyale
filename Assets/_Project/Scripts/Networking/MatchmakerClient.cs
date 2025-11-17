@@ -2,9 +2,10 @@ using UnityEngine;
 using TMPro;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine.Networking;
+using AIR.Shared.Contracts.Matchmaking;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http.Connections;
@@ -14,24 +15,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class MatchmakerClient : MonoBehaviour
 {
-    public enum ConnectionMode { Http, SignalR }
-
     [Header("UI")]
     [SerializeField] private TMP_Text responseText;
 
-    [Header("Mode")]
-    private ConnectionMode mode = ConnectionMode.SignalR;
+    [Header("Platform Support")]
     [SerializeField] private bool allowSignalROnThisPlatform = false; // Set true if you know this platform supports it
 
     [Header("Queue Settings")]
     [SerializeField] private int mmr = 1200;
-    [SerializeField] private string queueType = "Casual";
-    [SerializeField] private string lobbySize = "Small";
+    [SerializeField] private QueueType queueType = QueueType.Casual;
+    [SerializeField] private LobbySize lobbySize = LobbySize.Small;
+    [SerializeField] private bool botFill = false;
+    [SerializeField, Min(0)] private int botCount = 0;
 
     [Header("Networking")]
     [SerializeField] private bool forceLongPolling = true;
     [SerializeField] private bool bypassTlsForDev = false; // Only for HTTPS dev endpoints with self-signed certs
-    [SerializeField] private bool fallbackToHttpOnFailure = true;
     [SerializeField] private bool enableHeartbeat = true; // Dev toggle to enable/disable heartbeat
     [SerializeField, Range(3f, 5f)] private float heartbeatSeconds = 4f; // Heartbeat cadence
 
@@ -44,10 +43,18 @@ public class MatchmakerClient : MonoBehaviour
     private string _playerId;
     private string _ticketId;
     private int _ttlSeconds;
+    private QueueLease? _currentLease;
+    private QueueStateSnapshot _lastQueueState;
     private bool _queued;
     private Coroutine _heartbeatCo;
     private CancellationTokenSource _cts;
     private int _id;
+    private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
+    public DateTime QueueJoinedUtc { get; private set; } = DateTime.MinValue;
+    public TimeSpan QueueTimeElapsed => (_queued && QueueJoinedUtc != DateTime.MinValue)
+        ? DateTime.UtcNow - QueueJoinedUtc
+        : TimeSpan.Zero;
+    public bool IsQueued => _queued;
 
     void Awake()
     {
@@ -57,10 +64,9 @@ public class MatchmakerClient : MonoBehaviour
         _hubUrl = $"{_baseUrl}/Matchmaking"; // per guidance, Identify after connect
 
 #if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-        // Default to HTTP mode on platforms where .NET SignalR client is commonly unsupported
         if (!allowSignalROnThisPlatform)
         {
-            mode = ConnectionMode.Http;
+            Debug.LogWarning($"[{name}#{_id}] SignalR matchmaking disabled for this platform. Enable allowSignalROnThisPlatform once you've verified support.");
         }
 #endif
 
@@ -72,7 +78,7 @@ public class MatchmakerClient : MonoBehaviour
         try { ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12; } catch { }
 #endif
 
-        Debug.Log($"[{name}#{_id}] Awake. Base='{_baseUrl}' Hub='{_hubUrl}' Mode={mode}");
+        Debug.Log($"[{name}#{_id}] Awake. Base='{_baseUrl}' Hub='{_hubUrl}'");
     }
 
     // ---- Public API ----
@@ -84,17 +90,18 @@ public class MatchmakerClient : MonoBehaviour
             return;
         }
 
-        Debug.Log($"In JoinMatchmaking with mode {mode}");
+        Debug.Log("[Matchmaker] Attempting to join matchmaking via SignalR.");
 
-        switch (mode)
+#if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
+        if (!allowSignalROnThisPlatform)
         {
-            case ConnectionMode.Http:
-                StartCoroutine(JoinViaHttp());
-                break;
-            case ConnectionMode.SignalR:
-                _ = JoinViaSignalRAsync();
-                break;
+            Debug.LogWarning("[Matchmaker] SignalR matchmaking is disabled for this platform.");
+            SetStatusText("Matchmaking unavailable on this platform.");
+            return;
         }
+#endif
+
+        _ = JoinViaSignalRAsync();
     }
 
     public void LeaveMatchmaking()
@@ -105,156 +112,7 @@ public class MatchmakerClient : MonoBehaviour
             return;
         }
 
-        switch (mode)
-        {
-            case ConnectionMode.Http:
-                StartCoroutine(LeaveHttp());
-                break;
-            case ConnectionMode.SignalR:
-                _ = LeaveSignalRAsync();
-                break;
-    }
-    }
-
-    // ---- HTTP implementation ----
-    private IEnumerator JoinViaHttp()
-    {
-        var url = $"{_baseUrl}/matchmaking/join";
-        var join = new JoinReq { playerId = _playerId, mmr = mmr, queueType = queueType, lobbySize = lobbySize };
-        var json = JsonUtility.ToJson(join);
-
-        using var req = new UnityWebRequest(url, "POST");
-        var body = System.Text.Encoding.UTF8.GetBytes(json);
-        req.uploadHandler = new UploadHandlerRaw(body);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-#if UNITY_EDITOR || UNITY_STANDALONE
-        req.certificateHandler = new BypassCertificate();
-#endif
-        Debug.Log($"[Matchmaker][HTTP] POST {url} -> {json}");
-        yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError($"[Matchmaker][HTTP] Join failed: {req.responseCode} {req.error}");
-            SetStatusText($"Join failed: {req.error}");
-            yield break;
-        }
-
-        var respText = req.downloadHandler.text;
-        Debug.Log($"[Matchmaker][HTTP] Join resp: {respText}");
-        var resp = JsonUtility.FromJson<JoinResp>(respText);
-
-        if (!string.IsNullOrEmpty(resp.ticketId))
-        {
-            _ticketId = resp.ticketId;
-            _ttlSeconds = Math.Max(1, resp.ttlSeconds);
-            _queued = true;
-            SetStatusText(string.IsNullOrEmpty(resp.gameUrl) ? (resp.message ?? "Queued") : "Match found!");
-
-            StopHeartbeat();
-            if (string.IsNullOrEmpty(resp.gameUrl))
-                _heartbeatCo = StartCoroutine(HeartbeatHttpLoop());
-            else
-                OnMatchFound(resp);
-        }
-        else
-        {
-            SetStatusText(resp.message ?? "Join response missing ticketId");
-        }
-    }
-
-    private IEnumerator HeartbeatHttpLoop()
-    {
-        while (enableHeartbeat && _queued && !string.IsNullOrEmpty(_ticketId))
-        {
-            var url = $"{_baseUrl}/matchmaking/heartbeat";
-            var payload = new TicketReq { ticketId = _ticketId };
-            var json = JsonUtility.ToJson(payload);
-
-            using var req = new UnityWebRequest(url, "POST");
-            var body = System.Text.Encoding.UTF8.GetBytes(json);
-            req.uploadHandler = new UploadHandlerRaw(body);
-            req.downloadHandler = new DownloadHandlerBuffer();
-            req.SetRequestHeader("Content-Type", "application/json");
-#if UNITY_EDITOR || UNITY_STANDALONE
-            req.certificateHandler = new BypassCertificate();
-#endif
-            Debug.Log($"[Matchmaker][HTTP] Heartbeat -> {json}");
-            yield return req.SendWebRequest();
-
-            if (req.result == UnityWebRequest.Result.Success)
-            {
-                var text = req.downloadHandler.text?.Trim();
-                if (!string.IsNullOrEmpty(text))
-                {
-                    // Prefer boolean acknowledgement contract: true = stay queued, false = drop
-                    if (string.Equals(text, "true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // ok, continue
-                    }
-                    else if (string.Equals(text, "false", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Debug.LogWarning("[Matchmaker][HTTP] Heartbeat reported not queued anymore. Stopping.");
-                        _queued = false;
-                        SetStatusText("Queue expired");
-                        yield break;
-                    }
-                    else
-                    {
-                        // Back-compat: If server returns object with TTL or match info
-                        try
-                        {
-                            var resp = JsonUtility.FromJson<JoinResp>(text);
-                            if (resp != null)
-                            {
-                                if (resp.ttlSeconds > 0) _ttlSeconds = resp.ttlSeconds;
-                                if (!string.IsNullOrEmpty(resp.gameUrl))
-                                {
-                                    OnMatchFound(resp);
-                                    yield break;
-                                }
-                            }
-                        }
-                        catch { }
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[Matchmaker][HTTP] Heartbeat failed: {req.responseCode} {req.error}");
-            }
-
-            var wait = Mathf.Clamp(heartbeatSeconds, 3f, 5f);
-            yield return new WaitForSeconds(wait);
-        }
-    }
-
-    private IEnumerator LeaveHttp()
-    {
-        if (string.IsNullOrEmpty(_ticketId)) yield break;
-
-        var url = $"{_baseUrl}/matchmaking/leave";
-        var payload = new TicketReq { ticketId = _ticketId };
-        var json = JsonUtility.ToJson(payload);
-
-        using var req = new UnityWebRequest(url, "POST");
-        var body = System.Text.Encoding.UTF8.GetBytes(json);
-        req.uploadHandler = new UploadHandlerRaw(body);
-        req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Content-Type", "application/json");
-#if UNITY_EDITOR || UNITY_STANDALONE
-        req.certificateHandler = new BypassCertificate();
-#endif
-        Debug.Log($"[Matchmaker][HTTP] Leave -> {json}");
-        yield return req.SendWebRequest();
-
-        if (req.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogWarning($"[Matchmaker][HTTP] Leave failed: {req.responseCode} {req.error}");
-        }
-
-        CleanupQueueState("Left queue");
+        _ = LeaveSignalRAsync();
     }
 
     // ---- SignalR implementation ----
@@ -313,25 +171,76 @@ public class MatchmakerClient : MonoBehaviour
 
     private void RegisterSignalRHandlers()
     {
-        _connection.Reconnecting += error => { SetStatusText("Reconnecting..."); return Task.CompletedTask; };
-        _connection.Reconnected += id => { SetStatusText("Reconnected"); return Task.CompletedTask; };
-        _connection.Closed += error => { SetStatusText("Disconnected"); return Task.CompletedTask; };
-
-        _connection.On<JoinResp>("Queued", (resp) =>
+        _connection.Reconnecting += error =>
         {
-            if (resp == null) { Debug.LogWarning("[Matchmaker][SR] Queued payload null"); return; }
-            _ticketId = resp.ticketId;
-            _ttlSeconds = Math.Max(1, resp.ttlSeconds);
-            _queued = true;
-            SetStatusText(resp.message ?? "Queued");
-            StopHeartbeat();
-            _heartbeatCo = StartCoroutine(HeartbeatSignalRLoop());
+            EnqueueMainThread(() =>
+            {
+                Debug.Log($"[Matchmaker][State] Reconnecting ({error?.Message ?? "unknown error"})");
+                SetStatusText("Reconnecting...");
+            });
+            return Task.CompletedTask;
+        };
+        _connection.Reconnected += id =>
+        {
+            EnqueueMainThread(() =>
+            {
+                Debug.Log($"[Matchmaker][State] Reconnected (ConnectionId={id ?? "null"})");
+                SetStatusText("Reconnected");
+            });
+            return Task.CompletedTask;
+        };
+        _connection.Closed += error =>
+        {
+            EnqueueMainThread(() =>
+            {
+                Debug.Log($"[Matchmaker][State] Connection closed ({error?.Message ?? "no reason"})");
+                SetStatusText("Disconnected");
+            });
+            return Task.CompletedTask;
+        };
+
+        _connection.On<PlayerJoinResponse>("Queued", (resp) =>
+        {
+            EnqueueMainThread(() =>
+            {
+                if (resp == null)
+                {
+                    Debug.LogWarning("[Matchmaker][SR] Queued payload null");
+                    return;
+                }
+                if (string.IsNullOrEmpty(resp.TicketId))
+                {
+                    Debug.LogWarning("[Matchmaker][SR] Queued payload missing TicketId");
+                    return;
+                }
+
+                _ticketId = resp.TicketId;
+                _queued = true;
+                Debug.Log($"[Matchmaker] _queued flagged true, IsQueued now {IsQueued}");
+                var leaseIssuedAt = resp.Lease.IssuedAtUtc;
+                QueueJoinedUtc = leaseIssuedAt != default ? leaseIssuedAt : DateTime.UtcNow;
+                _lastQueueState = resp.QueueState;
+                UpdateLease(resp.Lease);
+                SetStatusText(BuildQueueStatus(resp));
+                StopHeartbeat(); // Stop any heartbeat loops that are currently running
+                _heartbeatCo = StartCoroutine(HeartbeatSignalRLoop());
+                Debug.Log($"[Matchmaker][SR] Queued ticket {_ticketId} Lease={_currentLease?.HeartbeatIntervalSeconds ?? 0}s");
+                Debug.Log($"[Matchmaker][State] Ticket issued -> {_ticketId} (Queue={queueType} Lobby={lobbySize})");
+                Debug.Log("[Matchmaker][State] Heartbeat loop started");
+            });
         });
 
-        _connection.On<JoinResp>("MatchFound", (resp) =>
+        _connection.On<MatchOffer>("MatchFound", (offer) =>
         {
-            if (resp == null) { Debug.LogWarning("[Matchmaker][SR] MatchFound payload null"); return; }
-            OnMatchFound(resp);
+            EnqueueMainThread(() =>
+            {
+                if (offer == null)
+                {
+                    Debug.LogWarning("[Matchmaker][SR] MatchFound payload null");
+                    return;
+                }
+                // OnMatchFound(offer);
+            });
         });
     }
 
@@ -341,6 +250,7 @@ public class MatchmakerClient : MonoBehaviour
         if (_connection.State == HubConnectionState.Disconnected)
         {
             SetStatusText("Connecting...");
+            Debug.Log("[Matchmaker][State] Connecting to matchmaking hub...");
             // Use overloads without CancellationToken on platforms with limited threading support
 #if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
             await _connection.StartAsync();
@@ -348,8 +258,8 @@ public class MatchmakerClient : MonoBehaviour
 #else
             await _connection.StartAsync(ct);
             await _connection.InvokeAsync("Identify", _playerId, ct);
-            // await _connection.InvokeAsync("Identify", new IdentifyPayload { PlayerId = _playerId }, ct);
 #endif
+            Debug.Log($"[Matchmaker][State] Connected and identified as {_playerId} (ConnectionId={_connection.ConnectionId ?? "null"})");
             SetStatusText("Connected");
         }
     }
@@ -362,45 +272,57 @@ public class MatchmakerClient : MonoBehaviour
         try
         {
             await EnsureSignalRConnectedAsync(ct);
-            var join = new JoinReq { playerId = _playerId, mmr = mmr, queueType = queueType, lobbySize = lobbySize };
-            var joinPayload = new JoinPayload { PlayerId = join.playerId, Mmr = join.mmr, QueueType = join.queueType, LobbySize = join.lobbySize };
-            Debug.Log($"[Matchmaker][SR] JoinQueue -> {joinPayload.PlayerId}/{joinPayload.Mmr}/{joinPayload.QueueType}/{joinPayload.LobbySize}");
+            var joinRequest = new PlayerJoinRequest
+            {
+                PlayerId = _playerId,
+                MMR = mmr,
+                QueueType = queueType,
+                LobbySize = lobbySize,
+                BotFill = botFill,
+                BotCount = botCount > 0 ? botCount : null
+            };
+            var botCountText = joinRequest.BotCount?.ToString() ?? "null";
+            Debug.Log($"[Matchmaker][SR] JoinQueue -> {joinRequest.PlayerId}/{joinRequest.MMR}/{joinRequest.QueueType}/{joinRequest.LobbySize}/BotFill={joinRequest.BotFill}/BotCount={botCountText}");
 
 #if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-            await _connection.InvokeAsync("JoinQueue", joinPayload);
+            await _connection.InvokeAsync("JoinQueue", joinRequest);
 #else
-            await _connection.InvokeAsync("JoinQueue", _playerId, mmr);
-            return;
-            await _connection.InvokeAsync("JoinQueue", joinPayload, ct);
+            await _connection.InvokeAsync("JoinQueue", joinRequest, ct);
 #endif
-            SetStatusText("Joining queue...");
+            Debug.Log($"[Matchmaker][State] Queue joined for {_playerId} -> {joinRequest.QueueType}/{joinRequest.LobbySize}");
+            SetStatusText("Queue joined.");
         }
         catch (Exception ex)
         {
             Debug.LogError($"[Matchmaker][SR] Join failed: {ex}");
             SetStatusText($"Join failed: {ex.Message}");
-            return;
-            if (fallbackToHttpOnFailure)
-            {
-                Debug.LogWarning("[Matchmaker] Falling back to HTTP matchmaking.");
-                mode = ConnectionMode.Http;
-                StartCoroutine(JoinViaHttp());
-            }
         }
     }
 
     private IEnumerator HeartbeatSignalRLoop()
     {
-        while (enableHeartbeat && // heartbeat is enabled
-                _queued && // currently in queue
-                !string.IsNullOrEmpty(_ticketId) && // already received a ticket
-                _connection != null && // has a SignalR connection
-                _connection.State == HubConnectionState.Connected) // is connected to the SignalR hub
+        Debug.Log($"Heartbeat loop activated -> Ticket={_ticketId ?? "none"} Queued={_queued} ConnectionState={_connection?.State}");
+        var iteration = 0;
+        Task<HeartbeatAck> task;
+        while (enableHeartbeat &&
+               _queued &&
+               !string.IsNullOrEmpty(_ticketId) &&
+               _connection != null &&
+               _connection.State == HubConnectionState.Connected)
         {
-            Task<bool> task = null;
+            iteration++;
+            Debug.Log($"[Matchmaker][State] Heartbeat iteration {iteration} -> Ticket={_ticketId} ConnectionState={_connection.State}");
+
+            task = null;
             try
             {
-                task = _connection.InvokeAsync<bool>("Heartbeat", new TicketPayload { TicketId = _ticketId });
+                var ping = new HeartbeatPing
+                {
+                    TicketId = _ticketId,
+                    ClientTimestampUtc = DateTime.UtcNow
+                };
+                task = _connection.InvokeAsync<HeartbeatAck>("Heartbeat", ping);
+                Debug.Log($"Sending another heartbeat with ping details: {ping.TicketId}, {ping.ClientTimestampUtc}");
             }
             catch (Exception ex)
             {
@@ -422,17 +344,48 @@ public class MatchmakerClient : MonoBehaviour
                 {
                     Debug.LogWarning("[Matchmaker][SR] Heartbeat canceled");
                 }
-                else if (!task.Result)
+                else
                 {
-                    Debug.LogWarning("[Matchmaker][SR] Heartbeat reported not queued anymore. Stopping.");
-                    _queued = false;
-                    SetStatusText("Queue expired");
-                    yield break;
+                    var ack = task.Result;
+                    if (ack == null)
+                    {
+                        Debug.LogWarning("[Matchmaker][SR] Heartbeat ack null");
+                    }
+                    else
+                    {
+                        UpdateLease(ack.Lease);
+                        Debug.Log($"[Matchmaker][State] Heartbeat ack -> TTL {_ttlSeconds}s Ticket={_ticketId}");
+                    }
                 }
             }
 
-            yield return new WaitForSeconds(heartbeatSeconds);
+            if (HasLeaseExpired())
+            {
+                Debug.LogWarning("[Matchmaker][SR] Lease expired while waiting for heartbeat.");
+                Debug.Log("[Matchmaker][State] Lease expired while waiting for heartbeat response");
+                _queued = false;
+                Debug.Log($"[Matchmaker] _queued flagged true, IsQueued now {IsQueued}");
+                SetStatusText("Queue expired");
+                yield break;
+            }
+
+            var waitForTime = GetHeartbeatIntervalSeconds();
+            Debug.Log($"Waiting for {waitForTime}");
+            yield return new WaitForSeconds(waitForTime);
         }
+        var exitReason = "unknown";
+        if (!enableHeartbeat)
+            exitReason = "Heartbeat toggle disabled";
+        else if (!_queued)
+            exitReason = "Queue state cleared (match found or manually left)";
+        else if (string.IsNullOrEmpty(_ticketId))
+            exitReason = "TicketId missing";
+        else if (_connection == null)
+            exitReason = "Connection disposed";
+        else if (_connection.State != HubConnectionState.Connected)
+            exitReason = $"Connection state {_connection.State}";
+
+        Debug.Log($"[Matchmaker][State] Heartbeat loop exiting -> Reason={exitReason} Queued={_queued} TicketSet={!string.IsNullOrEmpty(_ticketId)} ConnectionState={_connection?.State}");
     }
 
     private async Task LeaveSignalRAsync()
@@ -441,12 +394,26 @@ public class MatchmakerClient : MonoBehaviour
         {
             if (_connection != null && _connection.State == HubConnectionState.Connected && !string.IsNullOrEmpty(_ticketId))
             {
-                
+                var leaveRequest = new LeaveQueueRequest
+                {
+                    TicketId = _ticketId,
+                    PlayerId = _playerId
+                };
+                LeaveQueueResult result = null;
+                Debug.Log($"[Matchmaker][State] LeaveQueue -> Ticket={leaveRequest.TicketId} Player={leaveRequest.PlayerId}");
 #if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
-                await _connection.InvokeAsync("Leave", new TicketPayload { TicketId = _ticketId });
+                result = await _connection.InvokeAsync<LeaveQueueResult>("Leave", leaveRequest);
 #else
-                await _connection.InvokeAsync("Leave", new TicketPayload { TicketId = _ticketId });
+                result = await _connection.InvokeAsync<LeaveQueueResult>("Leave", leaveRequest);
 #endif
+                if (result != null && !result.Success)
+                {
+                    Debug.LogWarning($"[Matchmaker][SR] Leave reported failure: {result.FailureReason} {result.Message}");
+                }
+                else
+                {
+                    Debug.Log("[Matchmaker][State] Leave acknowledged by server");
+                }
             }
         }
         catch (Exception ex)
@@ -460,13 +427,28 @@ public class MatchmakerClient : MonoBehaviour
     }
 
     // ---- Shared helpers ----
-    private void OnMatchFound(JoinResp resp)
+    private void OnMatchFound(MatchOffer offer)
     {
         StopHeartbeat();
         _queued = false;
-        SetStatusText("Match found!");
-        // TODO: consume resp.gameUrl and resp.players to transition to game
-        Debug.Log($"[Matchmaker] Match URL: {resp.gameUrl} Ticket: {resp.ticketId}");
+        _currentLease = null;
+
+        if (!string.IsNullOrEmpty(offer?.TicketId))
+            _ticketId = offer.TicketId;
+
+        var roster = offer?.Roster;
+        var connection = offer?.Connection;
+        var status = roster != null
+            ? $"Match found ({roster.QueueType} • {roster.LobbySize})"
+            : "Match found!";
+        SetStatusText(status);
+
+        var host = connection?.Host ?? "unknown";
+        var port = connection?.Port ?? 0;
+        var transport = connection?.Transport ?? "unknown";
+        var region = connection?.Region ?? "unknown";
+        Debug.Log($"[Matchmaker] Match offer Ticket={offer?.TicketId} Session={offer?.SessionId} Host={host}:{port} Transport={transport} Region={region}");
+        Debug.Log($"[Matchmaker][State] Match found -> Ticket={offer?.TicketId} Session={offer?.SessionId} {region}/{transport}");
     }
 
     private void StopHeartbeat()
@@ -475,16 +457,74 @@ public class MatchmakerClient : MonoBehaviour
         {
             StopCoroutine(_heartbeatCo);
             _heartbeatCo = null;
+            Debug.Log("[Matchmaker][State] Heartbeat loop stopped");
         }
     }
 
     private void CleanupQueueState(string status)
     {
+        var previousTicket = _ticketId;
+        var previousTtl = _ttlSeconds;
         StopHeartbeat();
         _queued = false;
         _ticketId = null;
         _ttlSeconds = 0;
+        _currentLease = null;
+        _lastQueueState = null;
+        QueueJoinedUtc = DateTime.MinValue;
         SetStatusText(status);
+        Debug.Log($"[Matchmaker][State] Queue state reset -> {status} (Ticket={previousTicket ?? "none"} TTL={previousTtl}s)");
+    }
+
+    private void UpdateLease(QueueLease? lease)
+    {
+        if (!lease.HasValue)
+        {
+            Debug.Log("[Matchmaker][State] Lease cleared");
+            return;
+        }
+
+        _currentLease = lease;
+        var now = DateTime.UtcNow;
+        var expires = lease.Value.ExpiresAtUtc;
+        var secondsRemaining = Mathf.Max(0f, (float)(expires - now).TotalSeconds);
+        _ttlSeconds = Mathf.CeilToInt(secondsRemaining);
+        Debug.Log($"[Matchmaker][State] Lease updated -> TTL={_ttlSeconds}s Interval={lease.Value.HeartbeatIntervalSeconds}s Grace={lease.Value.HeartbeatGraceSeconds}s");
+    }
+
+    private float GetHeartbeatIntervalSeconds()
+    {
+        if (_currentLease.HasValue && _currentLease.Value.HeartbeatIntervalSeconds > 0)
+        {
+            return Mathf.Max(1f, _currentLease.Value.HeartbeatIntervalSeconds);
+        }
+        return Mathf.Clamp(heartbeatSeconds, 1f, 10f);
+    }
+
+    private bool HasLeaseExpired()
+    {
+        if (!_currentLease.HasValue)
+            return false;
+
+        var lease = _currentLease.Value;
+        var grace = Mathf.Max(0, lease.HeartbeatGraceSeconds);
+        return DateTime.UtcNow > lease.ExpiresAtUtc.AddSeconds(grace);
+    }
+
+    private string BuildQueueStatus(PlayerJoinResponse resp)
+    {
+        if (resp?.QueueState == null)
+            return "Queued";
+
+        var state = resp.QueueState;
+        var waitLabel = Convert.ToString(state.ExpectedWaitSeconds);
+        if (string.IsNullOrEmpty(waitLabel))
+            waitLabel = "?";
+        var activeLabel = Convert.ToString(state.ActiveTickets);
+        if (string.IsNullOrEmpty(activeLabel))
+            activeLabel = "?";
+
+        return $"Queued ({state.QueueType} • target {state.LobbyTargetSize} • wait {waitLabel}s • {activeLabel} in queue)";
     }
 
     private void SetStatusText(string text)
@@ -493,48 +533,26 @@ public class MatchmakerClient : MonoBehaviour
             responseText.text = text;
     }
 
-    // ---- Data contracts ----
-    [Serializable]
-    public class JoinReq {
-        public string playerId;
-        public int mmr;
-        public string queueType;
-        public string lobbySize;
-    }
-    [Serializable]
-    public class TicketReq {
-        public string ticketId;
-    }
-    [Serializable]
-    public class JoinResp {
-        public string message;
-        public string ticketId;
-        public int ttlSeconds;
-        public string gameUrl;
-        public string[] players;
-    }
-
-    private class BypassCertificate : CertificateHandler {
-        protected override bool ValidateCertificate(byte[] certificate) => true;
-    }
-
-    // Payloads for SignalR single-object invocation with camelCase property names
-    private class IdentifyPayload
+    private void Update()
     {
-        public string PlayerId { get; set; }
+        while (_mainThreadActions.TryDequeue(out var action))
+        {
+            try
+            {
+                action?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
     }
 
-    private class JoinPayload
+    private void EnqueueMainThread(Action action)
     {
-        public string PlayerId { get; set; }
-        public int Mmr { get; set; }
-        public string QueueType { get; set; }
-        public string LobbySize { get; set; }
-    }
-
-    private class TicketPayload
-    {
-        public string TicketId { get; set; }
+        if (action == null)
+            return;
+        _mainThreadActions.Enqueue(action);
     }
 
     private async void OnDestroy()
@@ -545,10 +563,7 @@ public class MatchmakerClient : MonoBehaviour
             if (_queued)
             {
                 // best effort leave
-                if (mode == ConnectionMode.SignalR)
-                {
-                    await LeaveSignalRAsync();
-                }
+                await LeaveSignalRAsync();
             }
             StopHeartbeat();
 
