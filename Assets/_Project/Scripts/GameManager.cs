@@ -4,6 +4,7 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    public bool IsGameActive { get; private set; }
 
     [Header("Game State")]
     public int startGold = 500;
@@ -28,7 +29,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        if (Instance != null) {
+        if (Instance != null)
+        {
             Instance.gold = startGold;
         }
         UpdateUI();
@@ -41,5 +43,15 @@ public class GameManager : MonoBehaviour
 
         if (roundText != null)
             roundText.text = $"Round: {currentRound}";
+    }
+
+    public void StartGame()
+    {
+        IsGameActive = true;
+    }
+
+    public void EndGame()
+    {
+        IsGameActive = false;
     }
 }

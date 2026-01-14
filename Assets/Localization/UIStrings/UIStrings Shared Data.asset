@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UIStrings Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: UIStrings
+  m_TableCollectionNameGuidString: f366e823c7120db4a9fbaecb97113dae
+  m_Entries:
+  - m_Id: 120193966080
+    m_Key: GameTitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1129490309120
+    m_Key: PauseScreen_Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1375192637440
+    m_Key: PauseScreen_Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1411662110720
+    m_Key: PauseScreen_Debug
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1431882850304
+    m_Key: PauseScreen_Quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1746266906624
+    m_Key: Settings_Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1789774422016
+    m_Key: Settings_Video
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1899551940608
+    m_Key: Settings_Gameplay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1935148998656
+    m_Key: Settings_Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1969747812352
+    m_Key: Settings_Misc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2105613901824
+    m_Key: Audio_MasterVolume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2167970619392
+    m_Key: Audio_MusicVolume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2218482622464
+    m_Key: Audio_SFXVolume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2264045346816
+    m_Key: Audio_VoiceVolume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2320727171072
+    m_Key: Settings_Apply
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2454286393344
+    m_Key: Video_Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2492613943296
+    m_Key: Video_ScreenMode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2552726708224
+    m_Key: ScreenMode_Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2611845423104
+    m_Key: ScreenMode_BorderlessWindowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2708440244224
+    m_Key: ScreenMode_Windowed
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 5768894582768795914
+  references:
+    version: 2
+    RefIds:
+    - rid: 5768894582768795914
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1751487111355

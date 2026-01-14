@@ -1,0 +1,14 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/Scripts/UI/USS/Layouts.uss?fileID=7433441132597879392&amp;guid=b7bf865ee983f6b4bbb5f82f4f755a82&amp;type=3#Layouts" />
+    <engine:GroupBox name="InGameUIContainer" style="justify-content: center; align-items: flex-start; height: 100%;">
+        <engine:GroupBox name="InGameBasicOptions" style="align-items: flex-start; padding-top: 0; padding-bottom: 0; padding-left: 0; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;">
+            <engine:GroupBox style="align-items: flex-start;">
+                <engine:Button text="Resume" name="Resume" class="spaced" />
+                <engine:Button text="Settings" name="Settings" class="spaced" />
+                <engine:Button text="Debug" name="Debug" enabled="true" class="spaced" />
+                <engine:Button text="Quit" name="Quit" class="BasicUIButton" />
+            </engine:GroupBox>
+            <engine:GroupBox name="NextLayer" />
+        </engine:GroupBox>
+    </engine:GroupBox>
+</engine:UXML>

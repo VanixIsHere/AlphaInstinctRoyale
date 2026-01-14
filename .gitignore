@@ -77,3 +77,15 @@ crashlytics-build.properties
 # CUSTOM EXCLUSIONS BELOW
 # DO not push photoshop files
 *.psd
+
+# Do not push font subsetting intermediate data (keep the automation scripts)
+/Automation/LocalizationSubsetting/FontSubsetText/*
+/Automation/LocalizationSubsetting/Logs/*
+/Automation/LocalizationSubsetting/OriginalFonts/*
+/Automation/LocalizationSubsetting/SubsetFonts/*
+
+# Do not push packages or any other built binaries
+/Assets/Packages
+
+# Ignore managed plugin binaries placed locally
+/Assets/Plugins/**/*.dll

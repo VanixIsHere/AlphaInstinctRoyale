@@ -11,7 +11,7 @@ public class RarityTier
 public class UnitPoolManager : MonoBehaviour
 {
     public UnitRegistry unitRegistry;
-    public List<UnitData> allUnits;
+    public List<UnitDataSO> allUnits;
     public List<RarityTier> rarityChances;
     public int currentTurn = 1;
 
@@ -47,17 +47,17 @@ public class UnitPoolManager : MonoBehaviour
 
     void Awake()
     {
-        allUnits = new List<UnitData>(unitRegistry.units);
+        allUnits = new List<UnitDataSO>(unitRegistry.units);
     }
 
-    public List<UnitData> GetRandomUnits(int count, int currentTurn)
+    public List<UnitDataSO> GetRandomUnits(int count, int currentTurn)
     {
         List<RarityTier> table = GetCurrentRarityTable();
-        List<UnitData> drawn = new();
+        List<UnitDataSO> drawn = new();
         for (int i = 0; i < count; i++)
         {
             int rarity = RollRarity(table);
-            var eligible = allUnits.FindAll(u => u.rarity == rarity);
+            var eligible = allUnits.FindAll(u => u.Data.Rarity == rarity);
 
             if (eligible.Count > 0)
             {

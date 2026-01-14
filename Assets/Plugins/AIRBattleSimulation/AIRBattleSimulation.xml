@@ -1,0 +1,861 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AIRBattleSimulation</name>
+    </assembly>
+    <members>
+        <member name="T:AIRBattleSimulation.Data.UnitDatabase">
+            <summary>
+            In-memory database of available <see cref="T:AIRBattleSimulation.UnitDefinition"/> entries used by the simulation.
+            </summary>
+        </member>
+        <member name="M:AIRBattleSimulation.Data.UnitDatabase.Get(System.String)">
+            <summary>
+            Gets a unit definition by name.
+            </summary>
+            <param name="unitName">The unit name key.</param>
+            <returns>The <see cref="T:AIRBattleSimulation.UnitDefinition"/> if found; otherwise <c>null</c>.</returns>
+        </member>
+        <member name="M:AIRBattleSimulation.Data.UnitDatabase.GetAll">
+            <summary>
+            Returns all unit definitions.
+            </summary>
+            <returns>An enumerable of all <see cref="T:AIRBattleSimulation.UnitDefinition"/> values.</returns>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitClass">
+            <summary>
+            Broad unit classification used for balancing and synergies.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Melee">
+            <summary>Close-quarters combat specialists.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Ranged">
+            <summary>Distance damage dealers using ranged attacks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Magic">
+            <summary>Ability-driven or arcane-style units.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Support">
+            <summary>Buffing, healing, or supportive utility units.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Flank">
+            <summary>Mobile skirmishers focusing on flanks and picks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitClass.Tech">
+            <summary>Technology and gadgets oriented units.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitOrigin">
+            <summary>
+            Thematic origin or region associated with a unit.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.USA">
+            <summary>Origin: United States.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Canada">
+            <summary>Origin: Canada.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.China">
+            <summary>Origin: China.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Taiwan">
+            <summary>Origin: Taiwan.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Korea">
+            <summary>Origin: Korea.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Japan">
+            <summary>Origin: Japan.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Brazil">
+            <summary>Origin: Brazil.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.India">
+            <summary>Origin: India.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.UK">
+            <summary>Origin: United Kingdom.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Egypt">
+            <summary>Origin: Egypt.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Switzerland">
+            <summary>Origin: Switzerland.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Russia">
+            <summary>Origin: Russia.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Mexico">
+            <summary>Origin: Mexico.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Benin">
+            <summary>Origin: Benin.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Australia">
+            <summary>Origin: Australia.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.Thailand">
+            <summary>Origin: Thailand.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitOrigin.France">
+            <summary>Origin: France.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitRole">
+            <summary>
+            Fine-grained battlefield role describing a unit's primary function.
+            </summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Vanguard">
+            <summary>Frontline initiator and protector.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bruiser">
+            <summary>Durable melee damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Enforcer">
+            <summary>Hard-control enforcer of front lines.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bulwark">
+            <summary>High-durability defensive specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Marksman">
+            <summary>Precision ranged damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Voidcaller">
+            <summary>Summoner or void-based caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Blaster">
+            <summary>Explosive burst damage dealer.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Healer">
+            <summary>Healing and sustain provider.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Augmenter">
+            <summary>Stat/ability enhancer for allies.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Controller">
+            <summary>Crowd control and zone manipulation.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Wardkeeper">
+            <summary>Vision and warding specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Infiltrator">
+            <summary>Stealthy backline diver.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Bleeder">
+            <summary>Damage-over-time specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Engineer">
+            <summary>Utility and device-focused operator.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Disruptor">
+            <summary>Disrupts enemy setups and channels.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Guardian">
+            <summary>Protective tank and bodyguard.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Volleyer">
+            <summary>Volley-style ranged attacker.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Snarecaster">
+            <summary>Snaring and rooting caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Harrier">
+            <summary>Harassment and kiting specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Invoker">
+            <summary>High-impact ability caster.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Channeler">
+            <summary>Sustained channeling spell user.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Venomancer">
+            <summary>Poison and debuff specialist.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Lurker">
+            <summary>Ambusher that lurks for picks.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Striker">
+            <summary>High mobility melee finisher.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Operator">
+            <summary>Field operations and tactical utility.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Augmentalist">
+            <summary>Advanced augmenter with tech focus.</summary>
+        </member>
+        <member name="F:AIRBattleSimulation.Models.UnitRole.Supportbot">
+            <summary>Support-focused automation unit.</summary>
+        </member>
+        <member name="T:AIRBattleSimulation.Models.UnitRoleExtensions">
+            <summary>
+            Extension helpers for translating roles to their broader unit classes.
+            </summary>
+        </member>
+        <member name="M:AIRBattleSimulation.Models.UnitRoleExtensions.GetClass(AIRBattleSimulation.Models.UnitRole)">
+            <summary>
+            Gets the <see cref="T:AIRBattleSimulation.Models.UnitClass"/> associated with the specified <see cref="T:AIRBattleSimulation.Models.UnitRole"/>.
+            </summary>
+            <param name="role">The role to translate.</param>
+            <returns>The mapped <see cref="T:AIRBattleSimulation.Models.UnitClass"/>.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when the role is not mapped.</exception>
+        </member>
+        <member name="T:AIRBattleSimulation.UnitDefinition">
+            <summary>
+            Defines a unit's identity, base statistics, and traits used by the battle simulation.
+            </summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.UnitName">
+            <summary>The display name of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseHealth">
+            <summary>Base health points of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseAttack">
+            <summary>Base attack damage of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseSpeed">
+            <summary>Base movement speed of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.BaseRange">
+            <summary>Base attack range of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Cost">
+            <summary>Shop or draft cost associated with the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Rarity">
+            <summary>Rarity tier of the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Role">
+            <summary>The unit's primary battlefield role.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Origin">
+            <summary>The origin or region associated with the unit.</summary>
+        </member>
+        <member name="P:AIRBattleSimulation.UnitDefinition.Class">
+            <summary>
+            The broader class derived from the unit's <see cref="P:AIRBattleSimulation.UnitDefinition.Role"/>.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.HeartbeatPing">
+            <summary>
+            Message sent from a client to keep a queue ticket alive.
+            Includes a timestamp so the server can measure skew and latency.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.HeartbeatPing.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatPing"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.HeartbeatPing.#ctor(System.String,System.DateTime,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatPing"/> class with the provided payload details.
+            </summary>
+            <param name="ticketId">Ticket identifier returned from the join response.</param>
+            <param name="clientTimestampUtc">Client-side UTC timestamp when the heartbeat was emitted.</param>
+            <param name="metadata">Optional metadata for diagnostics.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatPing.TicketId">
+            <summary>
+            Ticket identifier returned from <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse"/>.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatPing.ClientTimestampUtc">
+            <summary>
+            UTC timestamp recorded by the client when the heartbeat was sent.
+            Helps the server measure drift and detect stalled connections.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatPing.Metadata">
+            <summary>
+            Optional metadata for diagnostic or telemetry purposes.
+            Can include ping statistics, build version, or platform information.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.HeartbeatAck">
+            <summary>
+            Server acknowledgement for a <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatPing"/>.
+            Provides an updated <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueLease"/> and syncs server time with the client.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.HeartbeatAck.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatAck"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.HeartbeatAck.#ctor(System.String,System.DateTime,AIR.Shared.Contracts.Matchmaking.QueueLease)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatAck"/> class using explicit values.
+            </summary>
+            <param name="ticketId">Ticket identifier that the acknowledgement applies to.</param>
+            <param name="serverTimestampUtc">Server UTC timestamp when the heartbeat was processed.</param>
+            <param name="lease">New lease definition.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatAck.TicketId">
+            <summary>
+            Ticket identifier that the acknowledgement applies to.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatAck.ServerTimestampUtc">
+            <summary>
+            UTC timestamp from the matchmaking service when the heartbeat was processed.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.HeartbeatAck.Lease">
+            <summary>
+            Refreshed lease definition communicating the next heartbeat deadline.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest">
+            <summary>
+            Request sent by a client when they wish to leave the matchmaking queue voluntarily.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest"/> class.
+            </summary>
+            <param name="ticketId">Ticket identifier originally supplied by the server.</param>
+            <param name="playerId">Optional player identifier for validation.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest.TicketId">
+            <summary>
+            Ticket identifier supplied when the player originally joined the queue.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueRequest.PlayerId">
+            <summary>
+            Optional player identifier. Including this helps the server validate ownership.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult">
+            <summary>
+            Result returned to the client after attempting to leave the queue.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.#ctor(System.Boolean,AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult"/> class.
+            </summary>
+            <param name="success">Indicates whether the request succeeded.</param>
+            <param name="failureReason">Reason for failure when <paramref name="success"/> is false.</param>
+            <param name="message">Optional detail or hint.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.Success">
+            <summary>
+            Indicates whether the ticket was successfully removed from the queue.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.FailureReason">
+            <summary>
+            Failure reason that communicates why the request could not be satisfied.
+            Defaults to <see cref="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.None"/> when <see cref="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.Success"/> is true.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.Message">
+            <summary>
+            Optional human-readable detail mainly for logging or UI hints.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason">
+            <summary>
+            Enumeration of known reasons why a leave queue request may fail.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.None">
+            <summary>No failure. Used when <see cref="P:AIR.Shared.Contracts.Matchmaking.LeaveQueueResult.Success"/> equals true.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.TicketNotFound">
+            <summary>The provided ticket could not be found.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.AlreadyAssigned">
+            <summary>The ticket already received a match or was assigned to a lobby.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.LeaseExpired">
+            <summary>The ticket's heartbeat lease expired before the leave command executed.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LeaveQueueFailureReason.Unknown">
+            <summary>Unclassified error. Inspect server logs for more detail.</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.MatchOffer">
+            <summary>
+            Payload sent when matchmaking succeeds and the client is offered a match session.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchOffer.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchOffer"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchOffer.#ctor(System.String,System.String,AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo,AIR.Shared.Contracts.Matchmaking.MatchRosterSummary,System.DateTime,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchOffer"/> class with explicit values.
+            </summary>
+            <param name="ticketId">Ticket identifier that the offer corresponds to.</param>
+            <param name="sessionId">Session identifier that should be used when connecting to the game server.</param>
+            <param name="connection">Connection information for the match.</param>
+            <param name="roster">Roster summary for the lobby.</param>
+            <param name="offerExpiresAtUtc">UTC expiration timestamp for the offer.</param>
+            <param name="responseTtlSeconds">Response TTL in seconds for UI countdowns.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.TicketId">
+            <summary>
+            Ticket identifier that the offer corresponds to.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.SessionId">
+            <summary>
+            Unique session identifier that should be used when connecting to the game server.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.Connection">
+            <summary>
+            Transport connection information so the client knows which endpoint to connect to.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.Roster">
+            <summary>
+            Summary of the lobby roster, including opponents and allies.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.OfferExpiresAtUtc">
+            <summary>
+            UTC timestamp when the offer expires and is automatically rescinded.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchOffer.ResponseTtlSeconds">
+            <summary>
+            Time to live, in seconds, before the client must respond with accept/decline.
+            Useful for UI countdowns.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo">
+            <summary>
+            Network connection metadata for a match session.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.#ctor(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo"/> class.
+            </summary>
+            <param name="host">Hostname or IP that the client should use.</param>
+            <param name="port">Transport port for the session.</param>
+            <param name="transport">Transport technology description.</param>
+            <param name="region">Region or datacenter label.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.Host">
+            <summary>
+            Hostname or IP address the client should use to connect.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.Port">
+            <summary>
+            Transport port for the session, if applicable (0 for relay-only connections).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.Transport">
+            <summary>
+            Transport technology description (e.g., udp, tcp, relay, websocket).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchConnectionInfo.Region">
+            <summary>
+            Logical region or datacenter label so the UI can display where the session is hosted.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary">
+            <summary>
+            Summary of the roster provided alongside a match offer.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary.#ctor(AIR.Shared.Contracts.Matchmaking.QueueType,AIR.Shared.Contracts.Matchmaking.LobbySize,System.Collections.Generic.List{AIR.Shared.Contracts.Matchmaking.MatchRosterMember})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary"/> class with roster details.
+            </summary>
+            <param name="queueType">Queue type associated with the offer.</param>
+            <param name="lobbySize">Lobby size represented by the roster.</param>
+            <param name="members">Collection of roster members.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary.QueueType">
+            <summary>
+            Matchmaking queue type associated with the offer.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary.LobbySize">
+            <summary>
+            Target lobby size represented by this roster.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterSummary.Members">
+            <summary>
+            Collection of roster entries, including the requesting player and teammates/opponents.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.MatchRosterMember">
+            <summary>
+            Individual roster entry with basic identification and match context.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchRosterMember"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.#ctor(System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.MatchRosterMember"/> class.
+            </summary>
+            <param name="playerId">Identifier of the rostered player.</param>
+            <param name="isBot">Indicates if the slot represents a bot.</param>
+            <param name="mmr">Optional matchmaking rating.</param>
+            <param name="isLocalPlayer">Whether this entry represents the requesting player.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.PlayerId">
+            <summary>
+            Player identifier. May be a placeholder id when the slot is filled by a bot.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.IsBot">
+            <summary>
+            Indicates if the slot represents a service-controlled bot.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.Mmr">
+            <summary>
+            Optional matchmaking rating for display purposes. Null when unknown or not applicable.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.MatchRosterMember.IsLocalPlayer">
+            <summary>
+            True if this roster member is the requesting player. Useful for clients showing party order.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest">
+            <summary>
+            Request body sent by a client to join the matchmaking queue.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> class.
+            This parameterless constructor is intentionally provided for serialization
+            systems (e.g., System.Text.Json, Newtonsoft.Json, Unity JSON) which require
+            an empty constructor to create the object before assigning properties.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.PlayerId">
+            <summary>
+            Unique identifier for the player requesting to join the queue.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.MMR">
+            <summary>
+            Player matchmaking rating. Reserved for future use in matching.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.QueueType">
+            <summary>
+            Desired queue type (e.g., Casual or Ranked).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.LobbySize">
+            <summary>
+            Desired lobby size preference for matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotFill">
+            <summary>
+            When true, requester wants the lobby filled with bots up to capacity (e.g., solo vs bots).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotCount">
+            <summary>
+            Optional explicit number of bots requested (0..capacity-1). When provided and &gt; 0, takes precedence over <see cref="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotFill"/>.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.#ctor(System.String,System.Int32,AIR.Shared.Contracts.Matchmaking.QueueType,AIR.Shared.Contracts.Matchmaking.LobbySize,System.Boolean,System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> class
+            using the specified matchmaking parameters.
+            </summary>
+            <param name="playerId">Unique identifier for the player requesting to join the queue.</param>
+            <param name="mmr">Player matchmaking rating used for future ranked matching.</param>
+            <param name="queueType">Desired queue type (e.g., Casual or Ranked).</param>
+            <param name="lobbySize">Preferred lobby size for matchmaking.</param>
+            <param name="botFill">If true, fill remaining lobby slots with bots up to capacity.</param>
+            <param name="botCount">
+            Optional explicit number of bots requested (0..capacity-1). When set and greater than 0,
+            overrides <see cref="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest.BotFill"/>.
+            </param>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.LobbySize">
+            <summary>
+            Indicates the preferred capacity tier of the target lobby.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Small">
+            <summary>Small-sized lobby preference.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Medium">
+            <summary>Medium-sized lobby preference.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.LobbySize.Large">
+            <summary>Large-sized lobby preference.</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueType">
+            <summary>
+            Matchmaking queue type.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueType.Casual">
+            <summary>Casual queue (non-ranked matchmaking).</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueType.Ranked">
+            <summary>Ranked queue (MMR-based matchmaking).</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse">
+            <summary>
+            Acknowledgement sent after a <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> is accepted by the matchmaking service.
+            Provides the created ticket id, a snapshot of the queue the player joined, and lease info for heartbeats.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse"/> class for serializer support.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse.#ctor(System.String,AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot,AIR.Shared.Contracts.Matchmaking.QueueLease)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse"/> class with explicit values.
+            </summary>
+            <param name="ticketId">Unique identifier representing the player's queue ticket.</param>
+            <param name="queueState">Queue snapshot describing current lobby expectations.</param>
+            <param name="lease">Heartbeat lease information.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse.TicketId">
+            <summary>
+            Unique identifier that represents the player's queue ticket.
+            Must be echoed on subsequent heartbeat or leave requests.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse.QueueState">
+            <summary>
+            Snapshot of queue state that was used to place the player.
+            Helpful for client side messaging about expected wait or lobby sizing.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.PlayerJoinResponse.Lease">
+            <summary>
+            Lease definition that controls heartbeat frequency and expiry semantics.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot">
+            <summary>
+            Lightweight snapshot of queue-level metrics communicated to a joining player.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot"/> class.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.#ctor(AIR.Shared.Contracts.Matchmaking.QueueType,AIR.Shared.Contracts.Matchmaking.LobbySize,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot"/> class using queue metrics.
+            </summary>
+            <param name="queueType">Matchmaking queue type the player entered.</param>
+            <param name="lobbyTargetSize">Lobby size target for the queue.</param>
+            <param name="expectedWaitSeconds">Estimated wait duration in seconds.</param>
+            <param name="activeTickets">Count of active tickets in the queue.</param>
+            <param name="averageOpponentMmr">Average opponent MMR observed.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.QueueType">
+            <summary>
+            Matchmaking queue type that the player entered (e.g., Casual or Ranked).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.LobbyTargetSize">
+            <summary>
+            Lobby size target for matchmaking so the client can present expected match scale.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.ExpectedWaitSeconds">
+            <summary>
+            Estimated wait duration, represented in seconds, for the player to receive a match offer.
+            Value is informational only and can be adjusted as the queue evolves.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.ActiveTickets">
+            <summary>
+            Number of active tickets in the queue at the time this snapshot was produced.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueStateSnapshot.AverageOpponentMmr">
+            <summary>
+            Average opponent MMR sampled from other waiting tickets, if applicable.
+            Used to help the client set user expectations.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueLease">
+            <summary>
+            Lease contract that informs clients how often they must send heartbeats and when the ticket expires.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueLease.#ctor(System.DateTime,System.DateTime,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueLease"/> struct.
+            </summary>
+            <param name="issuedAtUtc">Timestamp when the lease was issued.</param>
+            <param name="expiresAtUtc">Expiration timestamp after which the ticket is invalid.</param>
+            <param name="heartbeatIntervalSeconds">Expected heartbeat cadence (in seconds).</param>
+            <param name="heartbeatGraceSeconds">Grace period (in seconds) after expiry to allow for network jitter.</param>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueLease.IssuedAtUtc">
+            <summary>
+            UTC timestamp when this lease was granted.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueLease.ExpiresAtUtc">
+            <summary>
+            UTC timestamp when the ticket will expire if no further heartbeats are received.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueLease.HeartbeatIntervalSeconds">
+            <summary>
+            Frequency in seconds at which the client is expected to send <see cref="T:AIR.Shared.Contracts.Matchmaking.HeartbeatPing"/> messages.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueLease.HeartbeatGraceSeconds">
+            <summary>
+            Number of seconds after <see cref="P:AIR.Shared.Contracts.Matchmaking.QueueLease.ExpiresAtUtc"/> that the ticket is still tolerated before removal.
+            Provides breathing room for delayed packets or brief disconnects.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueLease.Default">
+            <summary>
+            Gets a sensible default that can be used by serializers or unit tests.
+            </summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueStatus">
+            <summary>
+            Lifecycle state of a queue ticket within the matchmaking system.
+            </summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Queued">
+            <summary>The ticket is active and waiting to be matched.</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Cancelled">
+            <summary>The ticket was cancelled (user or system initiated).</summary>
+        </member>
+        <member name="F:AIR.Shared.Contracts.Matchmaking.QueueStatus.Expired">
+            <summary>The ticket expired due to inactivity or timeout.</summary>
+        </member>
+        <member name="T:AIR.Shared.Contracts.Matchmaking.QueueEntry">
+            <summary>
+            Server-side representation of a player's enqueued matchmaking ticket.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueEntry.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueEntry"/> class.
+            This parameterless constructor exists for JSON and Unity serialization,
+            which require an empty constructor to instantiate the object before
+            assigning properties.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.TicketId">
+            <summary>
+            Unique ticket identifier generated at enqueue time.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.PlayerId">
+            <summary>
+            Identifier of the player who owns this ticket.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.MMR">
+            <summary>
+            Player matchmaking rating used for ranked matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.QueueType">
+            <summary>
+            Queue type selected for this ticket (e.g., Casual or Ranked).
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.LobbySize">
+            <summary>
+            Lobby size preference for matchmaking.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotFill">
+            <summary>
+            If true, fill remaining lobby slots with bots up to capacity.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotCount">
+            <summary>
+            Explicit number of bots requested (0..capacity-1). When set and &gt; 0, overrides <see cref="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotFill"/>.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.EnqueuedAtUtc">
+            <summary>
+            UTC timestamp when the ticket was enqueued.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.LastSeenAtUtc">
+            <summary>
+            UTC timestamp of the last heartbeat or observed activity.
+            </summary>
+        </member>
+        <member name="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.Status">
+            <summary>
+            Current lifecycle status of the ticket.
+            </summary>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueEntry.ToRequest">
+            <summary>
+            Creates a <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> projecting the player's original request values.
+            </summary>
+            <returns>A request DTO representing the ticket's original join parameters.</returns>
+        </member>
+        <member name="M:AIR.Shared.Contracts.Matchmaking.QueueEntry.#ctor(System.String,System.Int32,AIR.Shared.Contracts.Matchmaking.QueueType,AIR.Shared.Contracts.Matchmaking.LobbySize,System.Boolean,System.Nullable{System.Int32})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AIR.Shared.Contracts.Matchmaking.QueueEntry"/> class using the
+            supplied matchmaking parameters. This constructor is typically used on the
+            server when converting a <see cref="T:AIR.Shared.Contracts.Matchmaking.PlayerJoinRequest"/> into an enqueued
+            matchmaking ticket.
+            </summary>
+            <param name="playerId">Identifier of the player who owns the ticket.</param>
+            <param name="mmr">Player matchmaking rating used for ranked matchmaking.</param>
+            <param name="queueType">Queue type selected for this ticket (e.g., Casual or Ranked).</param>
+            <param name="lobbySize">Preferred lobby size for matchmaking.</param>
+            <param name="botFill">Whether to fill remaining lobby slots with bots up to capacity.</param>
+            <param name="botCount">
+            Optional explicit number of bots requested (0..capacity-1).
+            When greater than 0, overrides <see cref="P:AIR.Shared.Contracts.Matchmaking.QueueEntry.BotFill"/>.
+            </param>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,6 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/Scripts/UI/USS/Layouts.uss?fileID=7433441132597879392&amp;guid=b7bf865ee983f6b4bbb5f82f4f755a82&amp;type=3#Layouts" />
+    <engine:VisualElement name="pause-root" style="flex-grow: 1; flex-direction: row; background-color: rgba(171, 236, 153, 0.44); flex-shrink: 1; flex-basis: auto; background-size: 100% 100%;">
+        <engine:VisualElement name="ui-element-content" class="column-left" style="flex-grow: 0; flex-shrink: 0; justify-content: center; align-items: flex-start; align-content: center; background-color: rgba(130, 130, 130, 0); align-self: auto;" />
+    </engine:VisualElement>
+</engine:UXML>

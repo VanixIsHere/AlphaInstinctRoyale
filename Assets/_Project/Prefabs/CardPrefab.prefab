@@ -886,6 +886,20 @@ MonoBehaviour:
   handAnchorRotation: {x: 0, y: 0, z: 0, w: 1}
   originalLayer: 0
   focusedLayerName: CardFocused
+  hoverUpSoundEffect:
+    clip: {fileID: 8300000, guid: 54276616fe734da4290bbb66d623d51c, type: 3}
+    baseVolume: 0.1
+    mixerGroup: {fileID: -9142428403929620644, guid: 8359ae9e262d19245b12f167088de7b0, type: 2}
+    loop: 0
+    playOnAwake: 0
+    frequentSound: 0
+  hoverDownSoundEffect:
+    clip: {fileID: 8300000, guid: 8dbb841bca583ef41b946feb7f13f310, type: 3}
+    baseVolume: 0.2
+    mixerGroup: {fileID: -9142428403929620644, guid: 8359ae9e262d19245b12f167088de7b0, type: 2}
+    loop: 0
+    playOnAwake: 0
+    frequentSound: 0
 --- !u!114 &6171049313373927209
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Crocodile
   m_EditorClassIdentifier: 
-  unitName: Crocodile
+  unitKey: Crocodile
   cardArtwork: {fileID: 2800000, guid: 21be33161c07c314fb2ac71b7dda4efe, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 110
-  baseAttack: 22
-  baseSpeed: 1
-  baseRange: 1
-  cost: 2
-  rarity: 1
-  role: 2
-  origin: 9

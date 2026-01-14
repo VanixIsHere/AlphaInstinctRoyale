@@ -1,8 +1,12 @@
+using System;
 using Unity.VisualScripting.FullSerializer;
+using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 public class BenchManager : MonoBehaviour
 {
+    const String benchSlotGameObjectName = "BenchSlot";
+
     [Header("Bench Layout")]
     public int benchSlotCount = 9;
     public float slotSpacing = 1.5f;
@@ -19,7 +23,7 @@ public class BenchManager : MonoBehaviour
     public GameObject unitInstancePrefab; // Placeholder prefab for unit
 
     private Transform[] benchSlots;
-    private UnitData[] occupiedSlots;
+    private UnitDataSO[] occupiedSlots;
     private UnitInstance[] occupiedInstances;
 
     [Header("Runtime")]
@@ -55,7 +59,7 @@ public class BenchManager : MonoBehaviour
     void GenerateBenchSlots()
     {
         benchSlots = new Transform[benchSlotCount];
-        occupiedSlots = new UnitData[benchSlotCount];
+        occupiedSlots = new UnitDataSO[benchSlotCount];
         occupiedInstances = new UnitInstance[benchSlotCount];
 
         float totalWidth = (benchSlotCount - 1) * slotSpacing;
@@ -72,7 +76,7 @@ public class BenchManager : MonoBehaviour
         }
     }
 
-    public bool TryAddToBench(UnitData unit)
+    public bool TryAddToBench(UnitDataSO unit)
     {
         for (int i = 0; i < benchSlots.Length; i++)
         {
@@ -88,7 +92,7 @@ public class BenchManager : MonoBehaviour
         return false;
     }
 
-    public bool CanAdd(UnitData unit)
+    public bool CanAdd(UnitDataSO unit)
     {
         // Check for empty slot
         for (int i = 0; i < occupiedSlots.Length; i++)
@@ -116,9 +120,17 @@ public class BenchManager : MonoBehaviour
         return false;
     }
 
-    UnitInstance SpawnUnit(UnitData unit, Transform slot)
+    UnitInstance SpawnUnit(UnitDataSO unit, Transform slot)
     {
         GameObject instanceObj = Instantiate(unit.unitPrefab, slot.position, Quaternion.identity, slot);
+        foreach (Transform child in instanceObj.transform.parent)
+        {
+            if (child == transform) continue;
+            if (child.name == benchSlotGameObjectName)
+            {
+                Utils.StandOnTop(instanceObj, child.gameObject);
+            }
+        }
         UnitInstance inst = instanceObj.GetComponent<UnitInstance>();
         if (inst != null)
         {

@@ -1,0 +1,130 @@
+.unity-button {
+    background-color: black;
+    -unity-font-style: bold;
+    border-radius: 8px;
+    opacity: 0.7;
+}
+
+.unity-text-element {
+    color: white;
+    font-size: 50px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.spaced {
+    margin-bottom: 10px;
+}
+
+#InGameUIContainer {
+    padding: 32px 64px;
+}
+
+#InGameBasicOptions {
+
+}
+
+#pause-root {
+    width: 100%;
+    height: 100%;
+}
+
+.primary-label {
+    font-size: 24px;
+}
+
+.secondary-label {
+    font-size: 18px;
+}
+
+.timeout-label {
+    font-size: 16px;
+}
+
+.tier1-button {
+    background-color: blue;
+}
+
+.confirm-options {
+    padding: 16px;
+}
+
+.confirm-button, .cancel-button {
+    background-color: red;
+    font-size: 20px;
+}
+
+.confirm-button.unity-button {
+    margin: 0;
+}
+
+/* Tier 1 buttons — e.g., primary menu items like Resume, Settings, Debug */
+.tier1-button {
+    font-size: 48px;
+    font-weight: bold;
+    background-color: #3a3a3a;
+}
+
+/* Tier 2 buttons — e.g., submenu items like Audio, Video */
+.tier2-button {
+    font-size: 40px;
+    background-color: #2e2e2e;
+}
+
+/* Tier 3 or deeper — e.g., individual settings (if you style buttons here) */
+.tier3-button {
+    font-size: 36px;
+    background-color: #252525;
+}
+
+/* Settings controls (optional) */
+.setting-control {
+    font-size: 12px;
+    padding: 6px;
+    margin-bottom: 4px;
+    background-color: #333;
+    border-radius: 4px;
+}
+
+/* ScrollView style for group containers */
+.settings-scroll {
+    padding: 6px;
+    border-left-width: 0px;
+    border-left-color: #555;
+    width: 100%;
+    min-width: 100%;
+}
+
+.apply-button {
+    margin-top: 8px;
+    align-self: flex-end;
+}
+
+/* Tier-specific layers */
+.tier1-layer {
+    background-color: #222;
+}
+
+.tier2-layer {
+    background-color:rgb(122, 44, 44);
+}
+
+.tier3-layer {
+    background-color: #111;
+    border-left-width: 0px;
+    border-left-color: #555;
+}
+
+.menu-column {
+    padding-left: 32px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    flex-grow: 0;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.menu-column.active {
+    opacity: 1;
+}

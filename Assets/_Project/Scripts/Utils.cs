@@ -31,4 +31,28 @@ public static class Utils
     {
         caller.StartCoroutine(Delay(delaySeconds, resultFunc, callback));
     }
+
+    public static void StandOnTop(GameObject standing, GameObject baseObj)
+    {
+        var baseBounds = GetWorldBounds(baseObj);
+        var standBounds = GetWorldBounds(standing);
+
+        // Move standing object so its bottom touches base's top
+        float deltaY = baseBounds.max.y - standBounds.min.y;
+
+        standing.transform.position += new Vector3(0f, deltaY, 0f);
+    }
+
+    private static Bounds GetWorldBounds(GameObject go)
+    {
+        var renderers = go.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+            return new Bounds(go.transform.position, Vector3.zero);
+
+        Bounds b = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            b.Encapsulate(renderers[i].bounds);
+
+        return b;
+    }
 }

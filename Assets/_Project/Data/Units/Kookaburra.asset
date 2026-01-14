@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Kookaburra
   m_EditorClassIdentifier: 
-  unitName: Kookaburra
+  unitKey: Kookaburra
   cardArtwork: {fileID: 2800000, guid: c1f6a175ba6dd7c49a0a710b324f3391, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 60
-  baseAttack: 12
-  baseSpeed: 2
-  baseRange: 3
-  cost: 3
-  rarity: 3
-  role: 17
-  origin: 14

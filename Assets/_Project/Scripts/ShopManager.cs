@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class ShopManager : MonoBehaviour
 {
-    public List<UnitData> unitPool; // List of all possible units
+    public List<UnitDataSO> unitPool; // List of all possible units
     public Transform handUIParent;  // Parent for card visuals
     public GameObject cardPrefab;
     public int gold = 10;
     public int handSize = 5;
-    private List<UnitData> currentHand = new();
+    private List<UnitDataSO> currentHand = new();
 
     public void GenerateHand()
     {
@@ -16,7 +16,7 @@ public class ShopManager : MonoBehaviour
 
         for (int i = 0; i < handSize; i++)
         {
-            UnitData unit = unitPool[Random.Range(0, unitPool.Count)];
+            UnitDataSO unit = unitPool[Random.Range(0, unitPool.Count)];
             currentHand.Add(unit);
             InstantiateCard(unit);
         }
@@ -31,7 +31,7 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    void InstantiateCard(UnitData data)
+    void InstantiateCard(UnitDataSO data)
     {
         GameObject card = Instantiate(cardPrefab, handUIParent);
         card.GetComponent<CardUI>().Init(data);

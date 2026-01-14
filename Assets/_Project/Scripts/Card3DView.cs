@@ -21,7 +21,7 @@ public class Card3DView : MonoBehaviour
     [Header("Flag Related")]
     [SerializeField] private OriginFlagLibrary originFlagLibrary;
 
-    private UnitData data;
+    private UnitDataSO unit;
     private MeshRenderer frontRenderer;
 
     void Awake()
@@ -42,9 +42,9 @@ public class Card3DView : MonoBehaviour
         frontRenderer.SetPropertyBlock(mpb);
     }
 
-    public void Init(UnitData unit)
+    public void Init(UnitDataSO data)
     {
-        data = unit;
+        unit = data;
 
         // FRONT ART
         if (unit.cardArtwork != null)
@@ -52,34 +52,34 @@ public class Card3DView : MonoBehaviour
             frontRenderer.material.SetTexture("_MainTex", unit.cardArtwork);
             // frontRenderer.material.SetTexture("_NoiseTexture", unit.cardArtwork);
             // frontRenderer.material.SetTexture("_MainTex", unit.cardArtwork);
-            Texture2D flag = originFlagLibrary.GetFlag(unit.origin);
+            Debug.Log($"Init card: unit={unit}, unit.Data={unit.Data}, originFlagLibrary={originFlagLibrary}");
+            Texture2D flag = originFlagLibrary.GetFlag(unit.Data.Origin);
             if (flag != null)
             {
                 applyFlag(flag);
             }
             else
             {
-                Debug.LogWarning($"Could not find a country flag for {unit.origin}.");
+                Debug.LogWarning($"Could not find a country flag for {unit.Data.Origin}.");
             }
-            Debug.Log("Shader name: " + frontRenderer.material.shader.name);
         }
 
         // NAME
         if (nameText != null)
         {
-            nameText.text = unit.unitName;
+            nameText.text = unit.Data.UnitName;
         }
         if (specializationText != null)
         {
-            specializationText.text = unit.role.ToString();
+            specializationText.text = unit.Data.Role.ToString();
         }
         if (costText != null)
         {
-            costText.text = unit.cost.ToString();
+            costText.text = unit.Data.Cost.ToString();
         }
         if (classIconImage != null)
         {
-            var icon = classIconLibrary.GetIcon(data.UnitClass);
+            var icon = classIconLibrary.GetIcon(data.Data.Class);
             classIconImage.sprite = icon;
         }
 

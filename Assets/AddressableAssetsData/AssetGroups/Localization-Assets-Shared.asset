@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Localization-Assets-Shared
+  m_EditorClassIdentifier: 
+  m_GroupName: Localization-Assets-Shared
+  m_GUID: 1190a8b98595ab24886f35a6ac9b2f95
+  m_SerializeEntries:
+  - m_GUID: 47c605d2d319b6348b97a6737c0b1796
+    m_Address: Assets/Localization/FontTable/FontAsset Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6222496540fd6d946919f17a5ff816d8
+    m_Address: Assets/Localization/VoiceLineQuotes/VoiceLineQuotes Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8029ccbb1400fc448a3560836e963bcc
+    m_Address: Assets/Localization/FontTable_Toolkit/FontAsset_Toolkit Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f366e823c7120db4a9fbaecb97113dae
+    m_Address: Assets/Localization/UIStrings/UIStrings Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 1
+  m_Settings: {fileID: 11400000, guid: 66b67a92cde75914ebc7cdc063d3c88c, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: c4bf9fb48063ec649a63a928e5b8df73, type: 2}
+    - {fileID: 11400000, guid: fcb10aea9341ff943b42c047c941f999, type: 2}

@@ -1,26 +1,28 @@
 using UnityEngine;
+using AIRBattleSimulation;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
 
 public class UnitInstance : MonoBehaviour
 {
-    public UnitData data;
+    public UnitDataSO unit;
     public int level = 1;
     public int currentHealth;
 
-    public void Init(UnitData unitData, int level = 1)
+    public void Init(UnitDataSO data, int level = 1)
     {
-        data = unitData;
+        this.unit = data;
         this.level = level;
         currentHealth = GetMaxHealth();
-        name = $"{data.unitName} (Lvl {level})";
+        name = $"{unit.Data.UnitName} (Lvl {level})";
     }
 
     public int GetMaxHealth()
     {
-        return data.baseHealth * level;
+        return unit.Data.BaseHealth * level;
     }
 
     public int GetAttack()
     {
-        return data.baseAttack * level;
+        return unit.Data.BaseAttack * level;
     }
 }

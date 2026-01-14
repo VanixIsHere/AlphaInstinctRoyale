@@ -1,4 +1,5 @@
 using System;
+using AudioSystem;
 using UnityEngine;
 
 public class CardState : MonoBehaviour
@@ -6,7 +7,6 @@ public class CardState : MonoBehaviour
     [Header("Runtime State")]
     [SerializeField] private bool isDragging = false;
     [SerializeField] private bool isHovering = false;
-    [SerializeField] private bool isLowered = false;
 
     [Tooltip("The default world position based on hand layout.")]
     [SerializeField] private Vector3 handAnchorPosition = Vector3.zero;
@@ -15,6 +15,9 @@ public class CardState : MonoBehaviour
 
     [SerializeField] private int originalLayer;
     [SerializeField] private string focusedLayerName = "CardFocused";
+
+    [SerializeField] private SoundData hoverUpSoundEffect;
+    [SerializeField] private SoundData hoverDownSoundEffect;
 
     public bool IsDragging
     {
@@ -25,13 +28,11 @@ public class CardState : MonoBehaviour
     public bool IsHovering
     {
         get => isHovering;
-        set => isHovering = value;
-    }
-
-    public bool IsLowered
-    {
-        get => isLowered;
-        set => isLowered = value;
+        set
+        {
+            if (isHovering == value) return;
+            isHovering = value;
+        }
     }
 
     public Vector3 HandAnchorPosition

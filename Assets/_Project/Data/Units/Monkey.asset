@@ -12,14 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c00f66e3cc70a8d46930da9dbc5415a2, type: 3}
   m_Name: Monkey
   m_EditorClassIdentifier: 
-  unitName: Monkey
+  unitKey: Monkey
   cardArtwork: {fileID: 2800000, guid: 54844214233c4324fba25cddbe7a12a9, type: 3}
   unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
-  baseHealth: 60
-  baseAttack: 12
-  baseSpeed: 3
-  baseRange: 3
-  cost: 3
-  rarity: 3
-  role: 14
-  origin: 2

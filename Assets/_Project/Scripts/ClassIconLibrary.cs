@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using AnimalAutoBattle.Units;
+using AIRBattleSimulation.Models;
 
 [CreateAssetMenu(fileName = "ClassIconLibrary", menuName = "Alpha Instinct/Class Icon Library")]
 public class ClassIconLibrary : ScriptableObject
