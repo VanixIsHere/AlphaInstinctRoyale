@@ -1,8 +1,12 @@
+using System;
 using Unity.VisualScripting.FullSerializer;
+using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 public class BenchManager : MonoBehaviour
 {
+    const String benchSlotGameObjectName = "BenchSlot";
+
     [Header("Bench Layout")]
     public int benchSlotCount = 9;
     public float slotSpacing = 1.5f;
@@ -119,6 +123,14 @@ public class BenchManager : MonoBehaviour
     UnitInstance SpawnUnit(UnitDataSO unit, Transform slot)
     {
         GameObject instanceObj = Instantiate(unit.unitPrefab, slot.position, Quaternion.identity, slot);
+        foreach (Transform child in instanceObj.transform.parent)
+        {
+            if (child == transform) continue;
+            if (child.name == benchSlotGameObjectName)
+            {
+                Utils.StandOnTop(instanceObj, child.gameObject);
+            }
+        }
         UnitInstance inst = instanceObj.GetComponent<UnitInstance>();
         if (inst != null)
         {
