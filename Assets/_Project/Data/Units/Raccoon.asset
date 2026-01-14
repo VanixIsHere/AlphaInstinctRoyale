@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitKey: Raccoon
   cardArtwork: {fileID: 2800000, guid: dbea5db739189e140ab3f8b70556a16b, type: 3}
-  unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
+  UnitSizeClassification: 1

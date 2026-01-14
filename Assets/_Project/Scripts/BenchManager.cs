@@ -1,11 +1,13 @@
 using System;
-using Unity.VisualScripting.FullSerializer;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
+using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// Manages the bench
+/// </summary>
 public class BenchManager : MonoBehaviour
 {
-    const String benchSlotGameObjectName = "BenchSlot";
+    const string benchSlotGameObjectName = "BenchSlot";
 
     [Header("Bench Layout")]
     public int benchSlotCount = 9;
@@ -20,7 +22,6 @@ public class BenchManager : MonoBehaviour
     public float CurrentYOffset => yOffsetFromGrid;
     [Header("Prefabs")]
     public GameObject slotVisualPrefab;
-    public GameObject unitInstancePrefab; // Placeholder prefab for unit
 
     private Transform[] benchSlots;
     private UnitDataSO[] occupiedSlots;
@@ -57,6 +58,9 @@ public class BenchManager : MonoBehaviour
     } 
 
 
+    /// <summary>
+    /// Generates the bench slots
+    /// </summary>
     void GenerateBenchSlots()
     {
         benchSlots = new Transform[benchSlotCount];
@@ -77,6 +81,11 @@ public class BenchManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Tries to add the unit to the bench
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <returns></returns>
     public bool TryAddToBench(UnitDataSO unit)
     {
         for (int i = 0; i < benchSlots.Length; i++)
@@ -93,6 +102,11 @@ public class BenchManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Checks if the unit can be added to the bench
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <returns></returns>
     public bool CanAdd(UnitDataSO unit)
     {
         // Check for empty slot
@@ -104,6 +118,7 @@ public class BenchManager : MonoBehaviour
             }
         }
 
+        // TODO - Merge check should probably run first and do the merge without needing to add the unit to the board
         // Bench full - check for potential merge (two level 1 units of same type)
         int count = 0;
         for (int i = 0; i < occupiedSlots.Length; i++)
@@ -121,9 +136,20 @@ public class BenchManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Spawns the played unit to the bench
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="slot"></param>
+    /// <returns></returns>
     UnitInstance SpawnUnit(UnitDataSO unit, Transform slot)
     {
-        GameObject instanceObj = Instantiate(unit.unitPrefab, slot.position, Quaternion.identity, slot);
+        if (GetUnitPrefab(unit.UnitSizeClassification) is not GameObject unitPrefab)
+        {
+            return null;
+        }
+
+        GameObject instanceObj = Instantiate(unitPrefab, slot.position, Quaternion.identity, slot);
         foreach (Transform child in instanceObj.transform.parent)
         {
             if (child == transform) continue;
@@ -140,5 +166,24 @@ public class BenchManager : MonoBehaviour
         }
         
         return inst;
+    }
+
+    /// <summary>
+    /// Loads the unit's <see cref="GameObject"/> based off <param name="unitSizeClassification"/>
+    /// </summary>
+    /// <param name="unitSizeClassification"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    internal GameObject GetUnitPrefab(UnitSizeClassificationEnum unitSizeClassification)
+    {
+        return unitSizeClassification switch
+        {
+            UnitSizeClassificationEnum.TINY => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/TinyUnit.prefab"),
+            UnitSizeClassificationEnum.SMALL => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/SmallUnit.prefab"),
+            UnitSizeClassificationEnum.MEDIUM => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/MediumUnit.prefab"),
+            UnitSizeClassificationEnum.LARGE => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/LargeUnit.prefab"),
+            UnitSizeClassificationEnum.EXTRALARGE => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/ExtraLargeUnit.prefab"),
+            _ => throw new NotImplementedException()
+        };
     }
 }

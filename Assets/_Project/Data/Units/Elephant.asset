@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitKey: Elephant
   cardArtwork: {fileID: 2800000, guid: c8aac61864222a544aee40831802f4f5, type: 3}
-  unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
+  UnitSizeClassification: 4

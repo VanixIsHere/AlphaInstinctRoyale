@@ -513,7 +513,6 @@ MonoBehaviour:
   slotSpacing: 2.1
   distanceBelowGridInHexes: 2.5
   slotVisualPrefab: {fileID: 4129597731149132338, guid: 4a5945786ac553440a6ffe221f737971, type: 3}
-  unitInstancePrefab: {fileID: 0}
   gridCenter: {fileID: 0}
 --- !u!4 &281150281
 Transform:

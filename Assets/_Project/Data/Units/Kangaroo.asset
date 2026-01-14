@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitKey: Kangaroo
   cardArtwork: {fileID: 2800000, guid: 40774c5f6820d2a4bbf0e64dffda1bd2, type: 3}
-  unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
+  UnitSizeClassification: 3

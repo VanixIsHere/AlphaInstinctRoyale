@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitKey: Panda
   cardArtwork: {fileID: 2800000, guid: a50f35ec557bb954fac0b8a6f2250cf0, type: 3}
-  unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
+  UnitSizeClassification: 3
