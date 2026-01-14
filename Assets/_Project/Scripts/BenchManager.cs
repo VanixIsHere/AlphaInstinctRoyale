@@ -56,6 +56,7 @@ public class BenchManager : MonoBehaviour
         GenerateBenchSlots();
     } 
 
+
     void GenerateBenchSlots()
     {
         benchSlots = new Transform[benchSlotCount];
@@ -131,11 +132,13 @@ public class BenchManager : MonoBehaviour
                 Utils.StandOnTop(instanceObj, child.gameObject);
             }
         }
-        UnitInstance inst = instanceObj.GetComponent<UnitInstance>();
-        if (inst != null)
+        
+        
+        if (instanceObj.TryGetComponent<UnitInstance>(out var inst))
         {
             inst.Init(unit);
         }
+        
         return inst;
     }
 }
