@@ -21,7 +21,7 @@ public class QueueTimeDisplay : MonoBehaviour
 
         if (!matchmaker.IsQueued)
         {
-            Debug.Log($"HELLO {targetLabel} {matchmaker.IsQueued}");
+            // Debug.Log($"HELLO {targetLabel} {matchmaker.IsQueued}");
             targetLabel.text = $"{prefix}--:--";
             return;
         }

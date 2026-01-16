@@ -1,10 +1,15 @@
 using UnityEngine;
 using TMPro;
+using System;
+using AIR.Shared.GameSession;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    public bool IsGameActive { get; private set; }
+    
+    private MatchRunner Runner;
+
+    public int testTick = 0;
 
     [Header("Game State")]
     public int startGold = 500;
@@ -25,6 +30,7 @@ public class GameManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject); // Optional: persists across scenes
+        Runner = new MatchRunner();
     }
 
     void Start()
@@ -34,6 +40,14 @@ public class GameManager : MonoBehaviour
             Instance.gold = startGold;
         }
         UpdateUI();
+
+        Debug.Log("Start in Game Manager");
+
+        StartCoroutine(Utils.Delay(3.0f, () =>
+        {
+            Runner.StartMatch();
+            Debug.Log("Delayed runner start");
+        }));
     }
 
     public void UpdateUI()
@@ -45,13 +59,13 @@ public class GameManager : MonoBehaviour
             roundText.text = $"Round: {currentRound}";
     }
 
-    public void StartGame()
+    void Update()
     {
-        IsGameActive = true;
-    }
-
-    public void EndGame()
-    {
-        IsGameActive = false;
+        if (Runner.isActive)
+        {
+            Debug.Log("Runner active");
+            Runner.Advance(Time.deltaTime);
+            testTick = Runner.TickIndex;
+        }
     }
 }
