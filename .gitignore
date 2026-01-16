@@ -89,3 +89,5 @@ crashlytics-build.properties
 
 # Ignore managed plugin binaries placed locally
 /Assets/Plugins/**/*.dll
+Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.dll
+Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.xml
