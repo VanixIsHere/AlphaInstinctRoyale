@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitKey: Barn Owl
   cardArtwork: {fileID: 2800000, guid: 3a5831219d67cf548b9c5f8570fcb096, type: 3}
-  unitPrefab: {fileID: 192925535374394307, guid: 36d269cbfa430a34cbeb724005ce3b10, type: 3}
+  UnitSizeClassification: 1
