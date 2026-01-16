@@ -91,3 +91,7 @@ crashlytics-build.properties
 /Assets/Plugins/**/*.dll
 Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.dll
 Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.xml
+Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.dll.meta
+Assets/Plugins/AIRBattleSimulation/AIRBattleSimulation.xml.meta
+.vscode/settings.json
+Assets/NuGet.config.meta
