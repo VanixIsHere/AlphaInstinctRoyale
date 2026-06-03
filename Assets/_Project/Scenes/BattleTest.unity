@@ -465,6 +465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28a58884e8b14ed4f985a7ac0aa69b53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainAudioMixer: {fileID: 0}
 --- !u!4 &265417077
 Transform:
   m_ObjectHideFlags: 0
@@ -2379,6 +2380,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1456793928364793965}
   - component: {fileID: 7134598563238765467}
+  - component: {fileID: 7134598563238765468}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2404,6 +2406,30 @@ MonoBehaviour:
   currentRound: 1
   goldText: {fileID: 1151324500}
   roundText: {fileID: 639217740}
+--- !u!114 &7134598563238765468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3203776546019357092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6397da2642abbe54d87cf567971d79f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
+  musicMixerGroup: {fileID: 0}
+  setupTrackClip: {fileID: 8300000, guid: bc63ad6a79a006a45b07a3eaa2c1ed5e, type: 3}
+  preBattleLoopClip: {fileID: 8300000, guid: e977cfc24f01e2c4e8f2a10f058c46eb, type: 3}
+  battleTrackClip: {fileID: 8300000, guid: 25402e37579ef304a93195754df1e140, type: 3}
+  postBattleLoopClipA: {fileID: 8300000, guid: 34645b01517a2d8419c3b4de5e576a30, type: 3}
+  postBattleLoopClipB: {fileID: 8300000, guid: 4fe9eefc560e08a4aa5e5c0ae2528590, type: 3}
+  crossfadeSeconds: 0.35
+  seamToleranceSeconds: 0.05
+  postBattleScheduleLeadSeconds: 0.15
+  fallbackToPostBattleOnAuthoritativeResolve: 1
+  battleTrackLoops: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
