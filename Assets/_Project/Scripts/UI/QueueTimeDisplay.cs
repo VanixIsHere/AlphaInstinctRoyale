@@ -8,20 +8,65 @@ public class QueueTimeDisplay : MonoBehaviour
     [SerializeField] private MatchmakerClient matchmaker;
     [SerializeField] private string prefix = "Queue Time: ";
 
+    private void Awake()
+    {
+        ResolveReferences();
+        Render();
+    }
+
+    private void OnEnable()
+    {
+        ResolveReferences();
+        Render();
+    }
+
     private void Reset()
     {
-        targetLabel = GetComponent<TMP_Text>();
-        matchmaker = FindObjectOfType<MatchmakerClient>();
+        ResolveReferences();
     }
 
     private void Update()
     {
-        if (targetLabel == null || matchmaker == null)
+        Render();
+    }
+
+    private void ResolveReferences()
+    {
+        if (targetLabel == null)
+            targetLabel = GetComponent<TMP_Text>();
+
+        var activeMatchmaker = MatchmakerClient.ActiveQueueInstance;
+        if (activeMatchmaker != null && activeMatchmaker != matchmaker)
+        {
+            matchmaker = activeMatchmaker;
+            return;
+        }
+
+        if (matchmaker != null && (matchmaker.HasQueueSession || matchmaker.IsQueued))
             return;
 
-        if (!matchmaker.IsQueued)
+        foreach (var candidate in FindObjectsByType<MatchmakerClient>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
         {
-            // Debug.Log($"HELLO {targetLabel} {matchmaker.IsQueued}");
+            if (candidate != null && (candidate.HasQueueSession || candidate.IsQueued))
+            {
+                matchmaker = candidate;
+                return;
+            }
+        }
+
+        if (matchmaker == null)
+            matchmaker = FindFirstObjectByType<MatchmakerClient>();
+    }
+
+    private void Render()
+    {
+        ResolveReferences();
+
+        if (targetLabel == null)
+            return;
+
+        if (matchmaker == null || !matchmaker.HasQueueSession)
+        {
             targetLabel.text = $"{prefix}--:--";
             return;
         }

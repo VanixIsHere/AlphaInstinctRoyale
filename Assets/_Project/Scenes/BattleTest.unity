@@ -1569,8 +1569,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 763f29c6993a3e146aa9467d1b82c410, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetLabel: {fileID: 873664611}
-  matchmaker: {fileID: 641969851}
+  targetLabel: {fileID: 0}
+  matchmaker: {fileID: 0}
   prefix: 'Queue Time: '
 --- !u!1 &1096686642
 GameObject:
@@ -2398,6 +2398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0133c64cef71c5641a70594e453c2dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  testTick: 0
   startGold: 500
   gold: 50
   currentRound: 1
