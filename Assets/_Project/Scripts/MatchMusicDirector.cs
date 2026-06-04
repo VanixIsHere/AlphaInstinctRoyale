@@ -42,7 +42,6 @@ public class MatchMusicDirector : MonoBehaviour
     [SerializeField] private double seamToleranceSeconds = 0.05d;
     [SerializeField] private double postBattleScheduleLeadSeconds = 0.15d;
     [SerializeField] private bool fallbackToPostBattleOnAuthoritativeResolve = true;
-    [SerializeField] private bool battleTrackLoops = true;
 
     public MatchMusicState CurrentMusicState { get; private set; } = MatchMusicState.Idle;
     public Phase? CurrentAuthorityPhase => lastObservedPhase;
@@ -119,7 +118,7 @@ public class MatchMusicDirector : MonoBehaviour
             return;
         }
 
-        EnterPostBattleLoop("local battle ended");
+        ContinueOrQueuePostBattleFlow("local battle ended");
     }
 
     private void HandleAuthoritativePhaseChange(Phase phase)
@@ -346,7 +345,7 @@ public class MatchMusicDirector : MonoBehaviour
 
         preBattleLoopQueued = false;
         CurrentBattleMusicPositionSeconds = positionSeconds;
-        CrossfadeToClip(battleTrackClip, battleTrackLoops, MatchMusicState.BattleTrack, reason, PostBattleLoopVariant.None, positionSeconds);
+        CrossfadeToClip(battleTrackClip, false, MatchMusicState.BattleTrack, reason, PostBattleLoopVariant.None, positionSeconds);
     }
 
     private void EnterPostBattleLoop(string reason)

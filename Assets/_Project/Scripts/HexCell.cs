@@ -1,14 +1,33 @@
 using UnityEngine;
+using AIR.Shared.GameSession;
 
 public class HexCell : MonoBehaviour
 {
     public int q;
     public int r;
+    public string tileId;
 
     public void Init(int q, int r)
     {
-        this.q = q;
-        this.r = r;
+        Init(new ArenaTileState
+        {
+            TileId = HexArenaUtils.FormatTileId(q, r),
+            Q = q,
+            R = r,
+        });
+    }
+
+    public void Init(ArenaTileState tile)
+    {
+        if (tile == null)
+        {
+            return;
+        }
+
+        q = tile.Q;
+        r = tile.R;
+        tileId = tile.TileId;
+
         name = $"HexCell ({q}, {r})";
 
         // Create a text label
@@ -18,7 +37,7 @@ public class HexCell : MonoBehaviour
         labelObj.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         
         var textMesh = labelObj.AddComponent<TextMesh>();
-        textMesh.text = $"{q},{r}";
+        textMesh.text = tileId;
         textMesh.characterSize = 0.2f;
         textMesh.fontSize = 32;
         textMesh.anchor = TextAnchor.MiddleCenter;

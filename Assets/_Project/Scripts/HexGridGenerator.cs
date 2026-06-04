@@ -1,42 +1,128 @@
 using System;
 using UnityEngine;
+using AIR.Shared.GameSession;
 
 public class HexGridGenerator : MonoBehaviour
 {
     public GameObject hexPrefab;
-    public int width = 6;
-    public int height = 5;
+    [Header("Arena Bootstrap")]
+    [SerializeField] private int bootstrapWidth = 9;
+    [SerializeField] private int bootstrapHeight = 9;
     public float hexSize = 1f;
+
+    private ArenaState generatedArena;
+
+    public int ArenaWidth => generatedArena?.Config?.Width ?? bootstrapWidth;
+    public int ArenaHeight => generatedArena?.Config?.Height ?? bootstrapHeight;
+    public MatchArenaConfig BootstrapArenaConfig => new()
+    {
+        Width = bootstrapWidth,
+        Height = bootstrapHeight,
+    };
+
     void Start()
     {
-        GenerateGrid();
+        SubscribeToAuthority();
+        RenderArena(BuildInitialArena());
     }
 
-    void GenerateGrid()
+    private ArenaState BuildInitialArena()
     {
+        MatchSnapshot snapshot = GameManager.Instance?.CurrentSnapshot;
+        if (snapshot?.Arena?.Tiles != null && snapshot.Arena.Tiles.Count > 0)
+        {
+            return snapshot.Arena;
+        }
+
+        return HexArenaUtils.BuildArena(BootstrapArenaConfig);
+    }
+
+    private void SubscribeToAuthority()
+    {
+        if (GameManager.Instance == null)
+        {
+            return;
+        }
+
+        GameManager.Instance.SnapshotUpdated -= HandleSnapshotUpdated;
+        GameManager.Instance.SnapshotUpdated += HandleSnapshotUpdated;
+    }
+
+    private void HandleSnapshotUpdated(MatchSnapshot snapshot)
+    {
+        if (snapshot?.Arena?.Tiles == null || snapshot.Arena.Tiles.Count == 0)
+        {
+            return;
+        }
+
+        if (generatedArena != null &&
+            generatedArena.Config.Width == snapshot.Arena.Config.Width &&
+            generatedArena.Config.Height == snapshot.Arena.Config.Height)
+        {
+            return;
+        }
+
+        RenderArena(snapshot.Arena);
+    }
+
+    private void RenderArena(ArenaState arena)
+    {
+        if (arena == null)
+        {
+            return;
+        }
+
+        generatedArena = arena;
+        ClearGridVisuals();
+
         float xOffset = Mathf.Sqrt(3f) * hexSize;
         float yOffset = 1.5f * hexSize;
 
-        for (int r = 0; r < height; r++)
+        foreach (ArenaTileState tile in arena.Tiles)
         {
-            int rOffset = Mathf.FloorToInt(r / 2f);
-            for (int q = -rOffset; q < width - rOffset; q++)
-            {
-                Vector3 pos = new Vector3(
-                    xOffset * (q + r * 0.5f),
-                    0,
-                    yOffset * r
-                );
+            Vector3 pos = new Vector3(
+                xOffset * (tile.Q + tile.R * 0.5f),
+                0,
+                yOffset * tile.R
+            );
 
-                GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, transform);
-                hex.GetComponent<HexCell>().Init(q, r);
-            }
+            GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, transform);
+            hex.GetComponent<HexCell>().Init(tile);
         }
-        
-        CreateGridCenterAndPositionCamera(xOffset, yOffset);
+
+        CreateGridCenterAndPositionCamera(xOffset, yOffset, arena.Config.Width, arena.Config.Height);
     }
 
-    void CreateGridCenterAndPositionCamera(float xOffset, float yOffset)
+    private void ClearGridVisuals()
+    {
+        for (int index = transform.childCount - 1; index >= 0; index--)
+        {
+            Transform child = transform.GetChild(index);
+            if (Application.isPlaying)
+            {
+                Destroy(child.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+
+        GameObject existingCenter = GameObject.Find("GridCenter");
+        if (existingCenter != null)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(existingCenter);
+            }
+            else
+            {
+                DestroyImmediate(existingCenter);
+            }
+        }
+    }
+
+    void CreateGridCenterAndPositionCamera(float xOffset, float yOffset, int width, int height)
     {
         // Calculate grid center
         float centerX = xOffset * (width - 1) / 2f;

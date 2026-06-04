@@ -16,12 +16,14 @@ namespace CardSystem
 
         // Card data (could be a ScriptableObject or just properties)
         public UnitDataSO Unit { get; private set; }
+        public string OfferId { get; private set; }
 
         private string focusedLayerName = "CardFocused";
 
-        public Card(UnitDataSO data, GameObject prefab, Transform parent, Vector3 spawnPosition, int layerMask, HandManager manager)
+        public Card(UnitDataSO data, string offerId, GameObject prefab, Transform parent, Vector3 spawnPosition, int layerMask, HandManager manager)
         {
             Unit = data;
+            OfferId = offerId;
             handManager = manager;
 
             var cardObject = Object.Instantiate(prefab, spawnPosition, Quaternion.identity);

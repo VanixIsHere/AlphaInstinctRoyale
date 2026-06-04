@@ -1,9 +1,13 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Rendering.Universal;
 using System.Linq;
 using UnityEngine.InputSystem.Utilities;
+using UnityEngine.UI;
+using TMPro;
 using AIRBattleSimulation;
+using AIR.Shared.GameSession;
 
 namespace CardSystem
 {
@@ -41,6 +45,12 @@ namespace CardSystem
         public readonly HashSet<GameObject> draggedCards = new();
 
         private CardHandDisplayer cardHandDisplayer;
+        private Button rerollButton;
+        private Button lockButton;
+        private TMP_Text lockButtonText;
+        private readonly List<string> lastRenderedOfferIds = new();
+        private Phase lastObservedPhase = Phase.GameStart;
+        private bool cardsInteractable;
 
         private void Awake()
         {
@@ -69,8 +79,8 @@ namespace CardSystem
             }
 
             InstantiateCardCameras();
-
-            GenerateHand();
+            BindShopButtons();
+            SubscribeToAuthority();
         }
 
         public void OnCardDragChanged(GameObject card, bool isDragging)
@@ -144,29 +154,38 @@ namespace CardSystem
             return cardHandDisplayer != null && cardHandDisplayer.IsHandLowered;
         }
 
+        public bool AreCardsInteractable()
+        {
+            return cardsInteractable;
+        }
+
+        public int GetLayoutHandSize()
+        {
+            return handSize;
+        }
+
         public void GenerateHand()
         {
             ClearHand();
 
             for (int i = 0; i < handSize; i++)
             {
-                var unit = allUnits[Random.Range(0, allUnits.Count)];
-                // GameObject card = CreateCard(unit, i);
-                Card card = CreateCard(unit, i);
+                var unit = allUnits[UnityEngine.Random.Range(0, allUnits.Count)];
+                Card card = CreateCard(unit, Guid.NewGuid().ToString("N"), i);
                 hand.Add(card);
             }
 
             cardHandDisplayer.HandleRecentGenerationStandup();
         }
 
-        private Card CreateCard(UnitDataSO unit, int handSlot)
+        private Card CreateCard(UnitDataSO unit, string offerId, int handSlot)
         {
             // Spawn slightly below the camera so cards fold upward nicely
             Vector3 spawnPosition = mainCamera.transform.position
                             + mainCamera.transform.forward * cardHandDisplayer.distanceFromCamera
                             - mainCamera.transform.up * Mathf.Abs(cardHandDisplayer.spawnVerticalOffsetFromCamera);
             var newCardLayer = LayerMask.NameToLayer($"Card{handSlot}");
-            var newCard = new Card(unit, cardPrefab, gameObject.transform, spawnPosition, newCardLayer, this);
+            var newCard = new Card(unit, offerId, cardPrefab, gameObject.transform, spawnPosition, newCardLayer, this);
             newCard.CardObject.transform.SetParent(gameObject.transform, worldPositionStays: true);
             return newCard;
         }
@@ -205,15 +224,47 @@ namespace CardSystem
                 card.Destroy();
             }
             hand.Clear();
+            lastRenderedOfferIds.Clear();
         }
 
         public void Reroll()
         {
-            if (GameManager.Instance.gold >= 2)
+            if (GameManager.Instance?.AuthorityClient == null)
             {
-                GameManager.Instance.gold -= 2;
-                GenerateHand();
-                GameManager.Instance.UpdateUI();
+                return;
+            }
+
+            CommandResult result = GameManager.Instance.AuthorityClient.SendCommand(new COM_RerollShop
+            {
+                PlayerId = GameManager.LocalPlayerId,
+                CorrelationId = Guid.NewGuid().ToString("N"),
+            });
+
+            if (!result.Accepted)
+            {
+                Debug.Log($"Reroll rejected: {result.RejectionReason} - {result.RejectionMessage}");
+            }
+        }
+
+        public void ToggleLock()
+        {
+            if (GameManager.Instance?.AuthorityClient == null)
+            {
+                return;
+            }
+
+            bool isLocked = GameManager.Instance.GetLocalPlayerSnapshot()?.Shop?.IsLocked ?? false;
+            MatchCommand command = isLocked
+                ? new COM_UnlockShopHand()
+                : new COM_LockShopHand();
+
+            command.PlayerId = GameManager.LocalPlayerId;
+            command.CorrelationId = Guid.NewGuid().ToString("N");
+
+            CommandResult result = GameManager.Instance.AuthorityClient.SendCommand(command);
+            if (!result.Accepted)
+            {
+                Debug.Log($"Hand lock toggle rejected: {result.RejectionReason} - {result.RejectionMessage}");
             }
         }
 
@@ -235,40 +286,183 @@ namespace CardSystem
                 return;
             }
             Card card = hand[index];
-
-            UnitDataSO unit = HandUnitData[index];
-            BenchManager bench = FindFirstObjectByType<BenchManager>();
-
-            if (bench == null)
+            if (GameManager.Instance?.AuthorityClient == null)
             {
-                Debug.LogError("BenchManager not found");
-            }
-
-            if (!bench.CanAdd(unit))
-            {
-                Debug.Log("Cannot play card: Bench is full or merge conditions unmet");
                 return;
             }
 
-            if (GameManager.Instance.gold < unit.Data.Cost)
+            CommandResult result = GameManager.Instance.AuthorityClient.SendCommand(new COM_BuyShopUnit
             {
-                Debug.Log("Not enough gold to play card");
+                PlayerId = GameManager.LocalPlayerId,
+                CorrelationId = Guid.NewGuid().ToString("N"),
+                OfferId = card.OfferId,
+            });
+
+            if (!result.Accepted)
+            {
+                Debug.Log($"Buy rejected: {result.RejectionReason} - {result.RejectionMessage}");
+            }
+        }
+
+        private void SubscribeToAuthority()
+        {
+            if (GameManager.Instance == null)
+            {
                 return;
             }
 
-            GameManager.Instance.gold -= unit.Data.Cost;
-            GameManager.Instance.UpdateUI();
+            GameManager.Instance.SnapshotUpdated -= HandleSnapshotUpdated;
+            GameManager.Instance.SnapshotUpdated += HandleSnapshotUpdated;
 
-            if (!bench.TryAddToBench(unit))
+            if (GameManager.Instance.CurrentSnapshot != null)
             {
-                Debug.LogWarning("Failed to add unit to bench despite pre-check");
-                GameManager.Instance.gold += unit.Data.Cost; // revert
-                GameManager.Instance.UpdateUI();
+                HandleSnapshotUpdated(GameManager.Instance.CurrentSnapshot);
+            }
+        }
+
+        private void BindShopButtons()
+        {
+            rerollButton = GameObject.Find("RerollButton")?.GetComponent<Button>();
+            lockButton = GameObject.Find("LockButton")?.GetComponent<Button>();
+            lockButtonText = lockButton?.GetComponentInChildren<TMP_Text>(true);
+
+            if (lockButton != null)
+            {
+                lockButton.onClick.RemoveListener(ToggleLock);
+                lockButton.onClick.AddListener(ToggleLock);
+            }
+        }
+
+        private void HandleSnapshotUpdated(MatchSnapshot snapshot)
+        {
+            Phase phase = snapshot?.Phase ?? Phase.GameStart;
+            PlayerSnapshot playerSnapshot = snapshot?.GetPlayer(GameManager.LocalPlayerId);
+            if (playerSnapshot == null || playerSnapshot.Shop == null)
+            {
+                ClearHand();
+                ApplyPhaseVisualState(phase, false);
+                UpdateShopButtons(null, phase);
+                lastObservedPhase = phase;
                 return;
             }
 
-            card.Destroy();
-            hand.RemoveAt(index);
+            bool enteredSetupPhase = lastObservedPhase != Phase.Setup && phase == Phase.Setup;
+            bool shopChanged = HaveShopOffersChanged(playerSnapshot.Shop);
+
+            if (shopChanged)
+            {
+                RenderShop(playerSnapshot.Shop, phase == Phase.Setup);
+            }
+            else if (enteredSetupPhase)
+            {
+                cardHandDisplayer?.HandleRecentGenerationStandup();
+            }
+
+            ApplyPhaseVisualState(phase, enteredSetupPhase && !shopChanged);
+            UpdateShopButtons(playerSnapshot, phase);
+            lastObservedPhase = phase;
+        }
+
+        private void UpdateShopButtons(PlayerSnapshot playerSnapshot, Phase phase)
+        {
+            bool isSetupPhase = phase == Phase.Setup;
+            bool isLocked = playerSnapshot?.Shop?.IsLocked ?? false;
+
+            if (rerollButton != null)
+            {
+                rerollButton.interactable = isSetupPhase && !isLocked;
+            }
+
+            if (lockButton != null)
+            {
+                lockButton.interactable = isSetupPhase;
+            }
+
+            if (lockButtonText != null)
+            {
+                lockButtonText.text = isLocked ? "Unlock" : "Lock";
+            }
+        }
+
+        private bool HaveShopOffersChanged(ShopState shopState)
+        {
+            if (shopState == null || shopState.Offers.Count != lastRenderedOfferIds.Count)
+            {
+                return true;
+            }
+
+            for (int index = 0; index < shopState.Offers.Count; index++)
+            {
+                if (shopState.Offers[index].OfferId != lastRenderedOfferIds[index])
+                {
+                    return true;
+                }
+            }
+
+            return hand.Count != shopState.Offers.Count;
+        }
+
+        private void ApplyPhaseVisualState(Phase phase, bool enteredSetupPhase)
+        {
+            bool isSetupPhase = phase == Phase.Setup;
+            cardsInteractable = isSetupPhase;
+
+            if (!isSetupPhase)
+            {
+                draggedCards.Clear();
+            }
+
+            foreach (Card card in hand)
+            {
+                if (card?.CardObject == null)
+                {
+                    continue;
+                }
+
+                CardState cardState = card.CardObject.GetComponent<CardState>();
+                if (cardState != null && !isSetupPhase)
+                {
+                    cardState.IsDragging = false;
+                    cardState.IsHovering = false;
+                }
+
+                Card3DView view = card.CardObject.GetComponent<Card3DView>();
+                if (view != null)
+                {
+                    view.SetVisualAlpha(isSetupPhase ? 1f : 0.5f);
+                }
+            }
+
+            if (isSetupPhase && enteredSetupPhase)
+            {
+                cardHandDisplayer?.HandleRecentGenerationStandup();
+            }
+        }
+
+        private void RenderShop(ShopState shopState, bool shouldStandUp)
+        {
+            ClearHand();
+
+            int renderCount = Mathf.Min(shopState.Offers.Count, handSize);
+            for (int index = 0; index < renderCount; index++)
+            {
+                ShopOfferState offer = shopState.Offers[index];
+                UnitDataSO unit = allUnits.FirstOrDefault(candidate => candidate.unitKey == offer.UnitKey);
+                if (unit == null)
+                {
+                    Debug.LogWarning($"HandManager: Could not resolve UnitDataSO for unit key '{offer.UnitKey}'.");
+                    continue;
+                }
+
+                Card card = CreateCard(unit, offer.OfferId, index);
+                hand.Add(card);
+                lastRenderedOfferIds.Add(offer.OfferId);
+            }
+
+            if (shouldStandUp)
+            {
+                cardHandDisplayer?.HandleRecentGenerationStandup();
+            }
         }
     }
 }

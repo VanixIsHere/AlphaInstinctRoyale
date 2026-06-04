@@ -31,9 +31,9 @@ public class FieldBoundsGizmo : MonoBehaviour
             return;
         Vector3 center = centerObj.transform.position;
 
-        float width = (gridGenerator.width + 0.5f) * Mathf.Sqrt(3f) * gridGenerator.hexSize;
+        float width = (gridGenerator.ArenaWidth + 0.5f) * Mathf.Sqrt(3f) * gridGenerator.hexSize;
         float halfWidth = width * 0.5f;
-        float halfHeight = (gridGenerator.height - 1) * 1.5f * gridGenerator.hexSize * 0.5f;
+        float halfHeight = (gridGenerator.ArenaHeight - 1) * 1.5f * gridGenerator.hexSize * 0.5f;
 
         float topZ = halfHeight;
         float bottomZ = benchManager.CurrentYOffset;

@@ -69,6 +69,27 @@ namespace CardSystem
 
         private void Update()
         {
+            if (handManager != null && !handManager.AreCardsInteractable())
+            {
+                if (state.IsDragging)
+                {
+                    handManager.OnCardDragChanged(gameObject, false);
+                    EndDrag();
+                }
+
+                state.IsDragging = false;
+                state.IsHovering = false;
+                TryUpdateCursor();
+                UpdateIdleMotion();
+                return;
+            }
+
+            if (BenchUnitInteraction.IsAnyUnitDragging && !state.IsDragging)
+            {
+                state.IsHovering = false;
+                return;
+            }
+
             if (state.IsDragging)
             {
                 UpdateDragPosition();
@@ -228,6 +249,10 @@ namespace CardSystem
         {
             if (CheckIfInputIsBlocked())
                 return;
+            if (handManager != null && !handManager.AreCardsInteractable())
+                return;
+            if (BenchUnitInteraction.IsAnyUnitDragging)
+                return;
             bool canHover = true;
             if (handManager != null)
             {
@@ -252,6 +277,10 @@ namespace CardSystem
         {
             if (CheckIfInputIsBlocked())
                 return;
+            if (handManager != null && !handManager.AreCardsInteractable())
+                return;
+            if (BenchUnitInteraction.IsAnyUnitDragging)
+                return;
             handManager.OnCardDragChanged(gameObject, true);
             BeginDrag();
             state.IsDragging = true;
@@ -261,6 +290,8 @@ namespace CardSystem
         void OnMouseUp()
         {
             if (CheckIfInputIsBlocked())
+                return;
+            if (handManager != null && !handManager.AreCardsInteractable())
                 return;
             handManager.OnCardDragChanged(gameObject, false);
             EndDrag();
@@ -275,6 +306,18 @@ namespace CardSystem
 
         void OnMouseOver()
         {
+            if (handManager != null && !handManager.AreCardsInteractable())
+            {
+                state.IsHovering = false;
+                TryUpdateCursor();
+                return;
+            }
+
+            if (BenchUnitInteraction.IsAnyUnitDragging)
+            {
+                return;
+            }
+
             if (cursor.currentState != CursorState.HoverGrab && !handManager.IsCardBeingDragged(gameObject) && !CheckIfInputIsBlocked())
             {
                 if (!handManager.IsCardBeingDragged())
@@ -290,6 +333,12 @@ namespace CardSystem
             /*
                 Enforces drag priority between all cards.
             */
+            if (handManager != null && !handManager.AreCardsInteractable())
+            {
+                cursor.SetState(CursorState.Normal);
+                return;
+            }
+
             if (state.IsDragging)
                 cursor.SetState(CursorState.Grab);
             else if (state.IsHovering)

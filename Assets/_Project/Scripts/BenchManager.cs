@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using AIR.Shared.GameSession;
 
 /// <summary>
 /// Manages the bench
@@ -23,9 +26,12 @@ public class BenchManager : MonoBehaviour
     [Header("Prefabs")]
     public GameObject slotVisualPrefab;
 
+    [Header("Interaction")]
+    [SerializeField] private bool allowBenchUnitInteraction = true;
+
     private Transform[] benchSlots;
-    private UnitDataSO[] occupiedSlots;
     private UnitInstance[] occupiedInstances;
+    private readonly Dictionary<string, UnitDataSO> unitLookup = new();
 
     [Header("Runtime")]
     public Transform gridCenter;
@@ -45,7 +51,7 @@ public class BenchManager : MonoBehaviour
         HexGridGenerator gridGen = FindFirstObjectByType<HexGridGenerator>();
         if (gridGen != null)
         {
-            float halfGridHeight = (gridGen.height - 1) * 1.5f * gridGen.hexSize * 0.5f;
+            float halfGridHeight = (gridGen.ArenaHeight - 1) * 1.5f * gridGen.hexSize * 0.5f;
             float extraOffset = distanceBelowGridInHexes * gridGen.hexSize;
             yOffsetFromGrid = -(halfGridHeight + extraOffset);
         }
@@ -55,7 +61,9 @@ public class BenchManager : MonoBehaviour
         }
 
         GenerateBenchSlots();
-    } 
+        CacheUnitLookup();
+        SubscribeToAuthority();
+    }
 
 
     /// <summary>
@@ -64,7 +72,6 @@ public class BenchManager : MonoBehaviour
     void GenerateBenchSlots()
     {
         benchSlots = new Transform[benchSlotCount];
-        occupiedSlots = new UnitDataSO[benchSlotCount];
         occupiedInstances = new UnitInstance[benchSlotCount];
 
         float totalWidth = (benchSlotCount - 1) * slotSpacing;
@@ -81,59 +88,24 @@ public class BenchManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Tries to add the unit to the bench
-    /// </summary>
-    /// <param name="unit"></param>
-    /// <returns></returns>
-    public bool TryAddToBench(UnitDataSO unit)
+    public bool CanInteract(UnitInstance unitInstance)
     {
-        for (int i = 0; i < benchSlots.Length; i++)
-        {
-            if (occupiedSlots[i] == null)
-            {
-                occupiedSlots[i] = unit;
-                occupiedInstances[i] = SpawnUnit(unit, benchSlots[i]);
-                return true;
-            }
-        }
-
-        Debug.Log("Bench is full!");
-        return false;
+        return allowBenchUnitInteraction
+            && unitInstance != null
+            && unitInstance.OwningBench == this
+            && unitInstance.BenchSlotIndex >= 0
+            && unitInstance.BenchSlotIndex < benchSlots.Length
+            && occupiedInstances[unitInstance.BenchSlotIndex] == unitInstance;
     }
 
-    /// <summary>
-    /// Checks if the unit can be added to the bench
-    /// </summary>
-    /// <param name="unit"></param>
-    /// <returns></returns>
-    public bool CanAdd(UnitDataSO unit)
+    public Transform GetBenchSlotTransform(int slotIndex)
     {
-        // Check for empty slot
-        for (int i = 0; i < occupiedSlots.Length; i++)
+        if (slotIndex < 0 || slotIndex >= benchSlots.Length)
         {
-            if (occupiedSlots[i] == null)
-            {
-                return true;
-            }
+            return null;
         }
 
-        // TODO - Merge check should probably run first and do the merge without needing to add the unit to the board
-        // Bench full - check for potential merge (two level 1 units of same type)
-        int count = 0;
-        for (int i = 0; i < occupiedSlots.Length; i++)
-        {
-            if (occupiedSlots[i] == unit && occupiedInstances[i] != null && occupiedInstances[i].level == 1)
-            {
-                count++;
-                if (count >= 2)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return benchSlots[slotIndex];
     }
 
     /// <summary>
@@ -142,7 +114,7 @@ public class BenchManager : MonoBehaviour
     /// <param name="unit"></param>
     /// <param name="slot"></param>
     /// <returns></returns>
-    UnitInstance SpawnUnit(UnitDataSO unit, Transform slot)
+    UnitInstance SpawnUnit(UnitDataSO unit, Transform slot, int slotIndex)
     {
         if (GetUnitPrefab(unit.UnitSizeClassification) is not GameObject unitPrefab)
         {
@@ -160,12 +132,115 @@ public class BenchManager : MonoBehaviour
         }
         
         
-        if (instanceObj.TryGetComponent<UnitInstance>(out var inst))
+        UnitInstance inst = instanceObj.GetComponent<UnitInstance>();
+        if (inst == null)
         {
-            inst.Init(unit);
+            inst = instanceObj.AddComponent<UnitInstance>();
         }
-        
+
+        inst.Init(unit);
+        inst.BindToBench(this, slotIndex, slot);
+
+        BenchUnitInteraction interaction = instanceObj.GetComponent<BenchUnitInteraction>();
+        if (interaction == null)
+        {
+            interaction = instanceObj.AddComponent<BenchUnitInteraction>();
+        }
+
+        interaction.Initialize(this, inst);
+
         return inst;
+    }
+
+    private void SubscribeToAuthority()
+    {
+        if (GameManager.Instance == null)
+        {
+            return;
+        }
+
+        GameManager.Instance.SnapshotUpdated -= HandleSnapshotUpdated;
+        GameManager.Instance.SnapshotUpdated += HandleSnapshotUpdated;
+
+        if (GameManager.Instance.CurrentSnapshot != null)
+        {
+            HandleSnapshotUpdated(GameManager.Instance.CurrentSnapshot);
+        }
+    }
+
+    private void CacheUnitLookup()
+    {
+        unitLookup.Clear();
+        UnitPoolManager poolManager = FindFirstObjectByType<UnitPoolManager>();
+        if (poolManager?.unitRegistry?.units == null)
+        {
+            return;
+        }
+
+        foreach (UnitDataSO unitData in poolManager.unitRegistry.units)
+        {
+            if (unitData != null && !string.IsNullOrWhiteSpace(unitData.unitKey))
+            {
+                unitLookup[unitData.unitKey] = unitData;
+            }
+        }
+    }
+
+    private void HandleSnapshotUpdated(MatchSnapshot snapshot)
+    {
+        PlayerSnapshot playerSnapshot = snapshot?.GetPlayer(GameManager.LocalPlayerId);
+        if (playerSnapshot == null || playerSnapshot.Bench == null)
+        {
+            ClearBenchVisuals();
+            return;
+        }
+
+        RenderBench(playerSnapshot.Bench);
+    }
+
+    private void RenderBench(BenchState benchState)
+    {
+        ClearBenchVisuals();
+
+        int renderCount = Math.Min(benchState.Slots.Count, benchSlots.Length);
+        for (int slotIndex = 0; slotIndex < renderCount; slotIndex++)
+        {
+            BenchSlotState slotState = benchState.Slots[slotIndex];
+            if (slotState.Unit == null)
+            {
+                continue;
+            }
+
+            if (!unitLookup.TryGetValue(slotState.Unit.UnitKey, out UnitDataSO unitData))
+            {
+                Debug.LogWarning($"BenchManager: Could not resolve UnitDataSO for unit key '{slotState.Unit.UnitKey}'.");
+                continue;
+            }
+
+            UnitInstance instance = SpawnUnit(unitData, benchSlots[slotIndex], slotIndex);
+            if (instance != null)
+            {
+                instance.Init(unitData, slotState.Unit.Level, slotState.Unit.CurrentHealth, slotState.Unit.RuntimeUnitId);
+                occupiedInstances[slotIndex] = instance;
+            }
+        }
+    }
+
+    private void ClearBenchVisuals()
+    {
+        if (occupiedInstances == null)
+        {
+            return;
+        }
+
+        for (int index = 0; index < occupiedInstances.Length; index++)
+        {
+            if (occupiedInstances[index] != null)
+            {
+                Destroy(occupiedInstances[index].gameObject);
+                occupiedInstances[index] = null;
+            }
+        }
     }
 
     /// <summary>

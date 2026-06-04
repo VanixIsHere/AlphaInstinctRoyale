@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class Card3DView : MonoBehaviour
 {
@@ -23,10 +24,17 @@ public class Card3DView : MonoBehaviour
 
     private UnitDataSO unit;
     private MeshRenderer frontRenderer;
+    private Renderer[] cachedRenderers = System.Array.Empty<Renderer>();
+    private TextMeshPro[] cachedTextMeshes = System.Array.Empty<TextMeshPro>();
+    private readonly Dictionary<Renderer, Color?> rendererBaseColors = new();
+    private readonly Dictionary<TextMeshPro, Color> textBaseColors = new();
+    private Color classIconBaseColor = Color.white;
+    private bool visualCacheInitialized;
 
     void Awake()
     {
         frontRenderer = topFaceObject.GetComponent<MeshRenderer>();
+        CacheVisualTargets();
     }
 
     private void applyFlag(Texture2D flagTexture)
@@ -86,5 +94,103 @@ public class Card3DView : MonoBehaviour
         // BACK ART (optional)
         // MeshRenderer backRenderer = bottomFaceObject.GetComponent<MeshRenderer>();
         // backRenderer.material.SetTexture("_MainTex", unit.cardBackTexture);
+    }
+
+    public void SetVisualAlpha(float alpha)
+    {
+        CacheVisualTargets();
+        float clampedAlpha = Mathf.Clamp01(alpha);
+
+        foreach (KeyValuePair<Renderer, Color?> pair in rendererBaseColors)
+        {
+            if (pair.Key == null || !pair.Value.HasValue)
+            {
+                continue;
+            }
+
+            Color tintedColor = pair.Value.Value;
+            tintedColor.a *= clampedAlpha;
+
+            MaterialPropertyBlock propertyBlock = new();
+            pair.Key.GetPropertyBlock(propertyBlock);
+            propertyBlock.SetColor("_Color", tintedColor);
+            propertyBlock.SetColor("_BaseColor", tintedColor);
+            pair.Key.SetPropertyBlock(propertyBlock);
+        }
+
+        foreach (KeyValuePair<TextMeshPro, Color> pair in textBaseColors)
+        {
+            if (pair.Key == null)
+            {
+                continue;
+            }
+
+            Color tintedColor = pair.Value;
+            tintedColor.a *= clampedAlpha;
+            pair.Key.color = tintedColor;
+        }
+
+        if (classIconImage != null)
+        {
+            Color tintedColor = classIconBaseColor;
+            tintedColor.a *= clampedAlpha;
+            classIconImage.color = tintedColor;
+        }
+    }
+
+    private void CacheVisualTargets()
+    {
+        if (visualCacheInitialized)
+        {
+            return;
+        }
+
+        cachedRenderers = GetComponentsInChildren<Renderer>(true);
+        cachedTextMeshes = GetComponentsInChildren<TextMeshPro>(true);
+
+        rendererBaseColors.Clear();
+        foreach (Renderer rendererTarget in cachedRenderers)
+        {
+            if (rendererTarget == null)
+            {
+                continue;
+            }
+
+            if (rendererTarget.sharedMaterial == null)
+            {
+                rendererBaseColors[rendererTarget] = null;
+                continue;
+            }
+
+            Material material = rendererTarget.sharedMaterial;
+            if (material.HasProperty("_Color"))
+            {
+                rendererBaseColors[rendererTarget] = material.color;
+            }
+            else if (material.HasProperty("_BaseColor"))
+            {
+                rendererBaseColors[rendererTarget] = material.GetColor("_BaseColor");
+            }
+            else
+            {
+                rendererBaseColors[rendererTarget] = null;
+            }
+        }
+
+        textBaseColors.Clear();
+        foreach (TextMeshPro textMesh in cachedTextMeshes)
+        {
+            if (textMesh != null)
+            {
+                textBaseColors[textMesh] = textMesh.color;
+            }
+        }
+
+        if (classIconImage != null)
+        {
+            classIconBaseColor = classIconImage.color;
+        }
+
+        visualCacheInitialized = true;
     }
 }

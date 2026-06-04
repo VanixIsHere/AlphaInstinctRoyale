@@ -34,9 +34,6 @@ public class CardUI : MonoBehaviour
     [System.Obsolete]
     public void OnClick()
     {
-        if (FindObjectOfType<BenchManager>().TryAddToBench(data))
-        {
-            Destroy(gameObject); // Remove card from hand
-        }
+        Debug.LogWarning("CardUI.OnClick is deprecated. Shop purchases must go through the authoritative match command path.");
     }
 }

@@ -251,6 +251,13 @@ public class CardHandDisplayer : MonoBehaviour
 
     void UpdateHandLowerState()
     {
+        if (!handManager.AreCardsInteractable())
+        {
+            recentlyGenerated = false;
+            IsHandLowered = true;
+            return;
+        }
+
         bool dragHappening = handManager.draggedCards.Count > 0;
         if (recentlyGenerated && dragHappening && recentlyGeneratedStandupCoroutine != null)
         {

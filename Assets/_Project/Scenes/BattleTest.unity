@@ -514,6 +514,7 @@ MonoBehaviour:
   slotSpacing: 2.1
   distanceBelowGridInHexes: 2.5
   slotVisualPrefab: {fileID: 4129597731149132338, guid: 4a5945786ac553440a6ffe221f737971, type: 3}
+  allowBenchUnitInteraction: 1
   gridCenter: {fileID: 0}
 --- !u!4 &281150281
 Transform:
@@ -861,8 +862,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hexPrefab: {fileID: 7501520096818386974, guid: b6d7acdaec39c5c4988eb92149d1a87e, type: 3}
-  width: 12
-  height: 8
+  bootstrapWidth: 10
+  bootstrapHeight: 9
   hexSize: 1
 --- !u!4 &399003377
 Transform:
@@ -2402,7 +2403,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testTick: 0
   startGold: 500
-  gold: 50
   currentRound: 1
   goldText: {fileID: 1151324500}
   roundText: {fileID: 639217740}
@@ -2429,7 +2429,6 @@ MonoBehaviour:
   seamToleranceSeconds: 0.05
   postBattleScheduleLeadSeconds: 0.15
   fallbackToPostBattleOnAuthoritativeResolve: 1
-  battleTrackLoops: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

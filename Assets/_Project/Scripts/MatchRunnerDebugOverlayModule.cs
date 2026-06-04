@@ -53,7 +53,7 @@ public class MatchRunnerDebugOverlayModule : DebugOverlayModule
         {
             builder.Append("Fixed Tick: ").Append(runner.FixedTickSeconds.ToString("F3")).Append("s").AppendLine();
             builder.Append("Current Round UI: ").Append(gameManager.currentRound).AppendLine();
-            builder.Append("Gold: ").Append(gameManager.gold).AppendLine();
+            builder.Append("Gold: ").Append(gameManager.GetLocalPlayerSnapshot()?.Economy?.Gold ?? gameManager.startGold).AppendLine();
             builder.Append("Frame dt: ").Append(Time.deltaTime.ToString("F4")).Append("s").AppendLine();
         }
     }

@@ -1,18 +1,23 @@
 using UnityEngine;
 using AIRBattleSimulation;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
 
 public class UnitInstance : MonoBehaviour
 {
+    public string RuntimeUnitId { get; private set; } = string.Empty;
     public UnitDataSO unit;
     public int level = 1;
     public int currentHealth;
 
-    public void Init(UnitDataSO data, int level = 1)
+    public BenchManager OwningBench { get; private set; }
+    public int BenchSlotIndex { get; private set; } = -1;
+    public Transform BenchSlotTransform { get; private set; }
+
+    public void Init(UnitDataSO data, int level = 1, int? currentHealthOverride = null, string runtimeUnitId = "")
     {
+        RuntimeUnitId = runtimeUnitId;
         this.unit = data;
         this.level = level;
-        currentHealth = GetMaxHealth();
+        currentHealth = currentHealthOverride ?? GetMaxHealth();
         name = $"{unit.Data.UnitName} (Lvl {level})";
     }
 
@@ -24,5 +29,12 @@ public class UnitInstance : MonoBehaviour
     public int GetAttack()
     {
         return unit.Data.BaseAttack * level;
+    }
+
+    public void BindToBench(BenchManager bench, int slotIndex, Transform slotTransform)
+    {
+        OwningBench = bench;
+        BenchSlotIndex = slotIndex;
+        BenchSlotTransform = slotTransform;
     }
 }
