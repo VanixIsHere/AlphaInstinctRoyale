@@ -4,6 +4,7 @@ using System.IO;
 using System;
 using UnityEngine.Rendering;
 using UnityEngine.Localization.Settings;
+using UnityEngine.Audio;
 
 public class GameSettingsManager : MonoBehaviour
 {
@@ -21,6 +22,13 @@ public class GameSettingsManager : MonoBehaviour
     public float MusicVolume { get; private set; }
     public float SFXVolume { get; private set; }
     public float VoiceVolume { get; private set; }
+
+    [Header("Audio Mixer")]
+    [SerializeField] private AudioMixer mainAudioMixer;
+
+    private const string MasterVolumeParameter = "MasterVolume";
+    private const string MusicVolumeParameter = "MusicVolume";
+    private const string SfxVolumeParameter = "SFXVolume";
 
     /* LOCALE OPTIONS */
     public LanguageSetting Language { get; private set; }
@@ -128,6 +136,7 @@ public class GameSettingsManager : MonoBehaviour
                     LocalizationSettings.SelectedLocale = locale;
                 LanguageChanged?.Invoke(Language);
                 ApplyVideoSettings();
+                ApplyAudioSettings();
             }
             catch (Exception e)
             {
@@ -158,6 +167,7 @@ public class GameSettingsManager : MonoBehaviour
             LocalizationSettings.SelectedLocale = locale;
         LanguageChanged?.Invoke(Language);
         ApplyVideoSettings();
+        ApplyAudioSettings();
         SaveSettings();
     }
 
@@ -176,16 +186,19 @@ public class GameSettingsManager : MonoBehaviour
     public void SetMasterVolume(float volume)
     {
         MasterVolume = Mathf.Clamp01(volume);
+        ApplyAudioSettings();
     }
 
     public void SetMusicVolume(float volume)
     {
         MusicVolume = Mathf.Clamp01(volume);
+        ApplyAudioSettings();
     }
 
     public void SetSFXVolume(float volume)
     {
         SFXVolume = Mathf.Clamp01(volume);
+        ApplyAudioSettings();
     }
 
     public void SetVoiceVolume(float volume)
@@ -205,5 +218,27 @@ public class GameSettingsManager : MonoBehaviour
         if (locale != null)
             LocalizationSettings.SelectedLocale = locale;
         LanguageChanged?.Invoke(lang);
+    }
+
+    private void ApplyAudioSettings()
+    {
+        if (mainAudioMixer == null)
+        {
+            return;
+        }
+
+        mainAudioMixer.SetFloat(MasterVolumeParameter, ToMixerDecibels(MasterVolume));
+        mainAudioMixer.SetFloat(MusicVolumeParameter, ToMixerDecibels(MusicVolume));
+        mainAudioMixer.SetFloat(SfxVolumeParameter, ToMixerDecibels(SFXVolume));
+    }
+
+    private static float ToMixerDecibels(float normalizedVolume)
+    {
+        if (normalizedVolume <= 0.0001f)
+        {
+            return -80f;
+        }
+
+        return Mathf.Log10(normalizedVolume) * 20f;
     }
 }

@@ -241,7 +241,7 @@ public class PauseMenuController : MonoBehaviour
             }
         }
 
-        bool shouldPauseTime = GameManager.Instance != null && !GameManager.Instance.IsGameActive; // Don't freeze gameplay if in an active session
+        bool shouldPauseTime = GameManager.Instance != null; //&& !GameManager.Instance?.IsGameActive; // Don't freeze gameplay if in an active session
         Time.timeScale = shouldPauseTime && isPaused ? 0f : 1f;  // Pause or resume game time
 
         uiBlocker?.SetBlocking(isPaused);

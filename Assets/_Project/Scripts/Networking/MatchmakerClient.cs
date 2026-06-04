@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class MatchmakerClient : MonoBehaviour
 {
+    private static MatchmakerClient _activeQueueInstance;
+
     [Header("UI")]
     [SerializeField] private TMP_Text responseText;
 
@@ -37,6 +39,7 @@ public class MatchmakerClient : MonoBehaviour
     // SignalR specifics
     private HubConnection _connection;
     private string _hubUrl;
+    private bool _isResettingConnection;
 
     // Shared state
     private string _baseUrl;
@@ -48,13 +51,30 @@ public class MatchmakerClient : MonoBehaviour
     private bool _queued;
     private Coroutine _heartbeatCo;
     private CancellationTokenSource _cts;
+    private bool _shouldRequeueOnReconnect;
     private int _id;
     private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
+    private TimeSpan _queueElapsedBeforeCurrentRun = TimeSpan.Zero;
+    private DateTime _queueTimerStartedUtc = DateTime.MinValue;
+    private bool _queueTimerRunning;
     public DateTime QueueJoinedUtc { get; private set; } = DateTime.MinValue;
-    public TimeSpan QueueTimeElapsed => (_queued && QueueJoinedUtc != DateTime.MinValue)
-        ? DateTime.UtcNow - QueueJoinedUtc
-        : TimeSpan.Zero;
+    public TimeSpan QueueTimeElapsed
+    {
+        get
+        {
+            if (QueueJoinedUtc == DateTime.MinValue)
+                return TimeSpan.Zero;
+
+            if (!_queueTimerRunning)
+                return _queueElapsedBeforeCurrentRun;
+
+            return _queueElapsedBeforeCurrentRun + (DateTime.UtcNow - _queueTimerStartedUtc);
+        }
+    }
     public bool IsQueued => _queued;
+    public bool HasQueueSession => QueueJoinedUtc != DateTime.MinValue;
+    public bool IsQueueTimerRunning => _queueTimerRunning;
+    public static MatchmakerClient ActiveQueueInstance => _activeQueueInstance;
 
     void Awake()
     {
@@ -84,6 +104,8 @@ public class MatchmakerClient : MonoBehaviour
     // ---- Public API ----
     public void JoinMatchmaking()
     {
+        _shouldRequeueOnReconnect = false;
+
         if (_queued)
         {
             Debug.Log("[Matchmaker] Already queued. Ignoring join request.");
@@ -106,6 +128,8 @@ public class MatchmakerClient : MonoBehaviour
 
     public void LeaveMatchmaking()
     {
+        _shouldRequeueOnReconnect = false;
+
         if (!_queued && string.IsNullOrEmpty(_ticketId))
         {
             Debug.Log("[Matchmaker] Not queued. Ignoring leave request.");
@@ -163,7 +187,13 @@ public class MatchmakerClient : MonoBehaviour
                 o.PayloadSerializerOptions.PropertyNameCaseInsensitive = true;
                 o.PayloadSerializerOptions.IncludeFields = true;
             })
-            .WithAutomaticReconnect();
+            .WithAutomaticReconnect(new[]
+            {
+                TimeSpan.Zero,
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(2),
+                TimeSpan.FromSeconds(4)
+            });
 
         _connection = builder.Build();
         RegisterSignalRHandlers();
@@ -176,7 +206,7 @@ public class MatchmakerClient : MonoBehaviour
             EnqueueMainThread(() =>
             {
                 Debug.Log($"[Matchmaker][State] Reconnecting ({error?.Message ?? "unknown error"})");
-                SetStatusText("Reconnecting...");
+                HandleReconnectStarted();
             });
             return Task.CompletedTask;
         };
@@ -185,7 +215,7 @@ public class MatchmakerClient : MonoBehaviour
             EnqueueMainThread(() =>
             {
                 Debug.Log($"[Matchmaker][State] Reconnected (ConnectionId={id ?? "null"})");
-                SetStatusText("Reconnected");
+                HandleReconnected();
             });
             return Task.CompletedTask;
         };
@@ -194,7 +224,7 @@ public class MatchmakerClient : MonoBehaviour
             EnqueueMainThread(() =>
             {
                 Debug.Log($"[Matchmaker][State] Connection closed ({error?.Message ?? "no reason"})");
-                SetStatusText("Disconnected");
+                HandleTerminalDisconnect("Disconnected");
             });
             return Task.CompletedTask;
         };
@@ -218,12 +248,11 @@ public class MatchmakerClient : MonoBehaviour
                 _queued = true;
                 Debug.Log($"[Matchmaker] _queued flagged true, IsQueued now {IsQueued}");
                 var leaseIssuedAt = resp.Lease.IssuedAtUtc;
-                QueueJoinedUtc = leaseIssuedAt != default ? leaseIssuedAt : DateTime.UtcNow;
+                StartQueueTimer(leaseIssuedAt != default ? leaseIssuedAt : DateTime.UtcNow);
                 _lastQueueState = resp.QueueState;
                 UpdateLease(resp.Lease);
                 SetStatusText(BuildQueueStatus(resp));
-                StopHeartbeat(); // Stop any heartbeat loops that are currently running
-                _heartbeatCo = StartCoroutine(HeartbeatSignalRLoop());
+                EnsureHeartbeatLoopRunning();
                 Debug.Log($"[Matchmaker][SR] Queued ticket {_ticketId} Lease={_currentLease?.HeartbeatIntervalSeconds ?? 0}s");
                 Debug.Log($"[Matchmaker][State] Ticket issued -> {_ticketId} (Queue={queueType} Lobby={lobbySize})");
                 Debug.Log("[Matchmaker][State] Heartbeat loop started");
@@ -246,7 +275,26 @@ public class MatchmakerClient : MonoBehaviour
 
     private async Task EnsureSignalRConnectedAsync(CancellationToken ct)
     {
+        while (_isResettingConnection)
+            await Task.Yield();
+
         BuildSignalRConnection();
+
+        if (_connection != null &&
+            _connection.State != HubConnectionState.Connected &&
+            _connection.State != HubConnectionState.Disconnected)
+        {
+            Debug.Log($"[Matchmaker][State] Resetting stale connection in state {_connection.State} before connect");
+            await ResetConnectionAsync();
+            while (_isResettingConnection)
+                await Task.Yield();
+
+            BuildSignalRConnection();
+        }
+
+        if (_connection == null)
+            BuildSignalRConnection();
+
         if (_connection.State == HubConnectionState.Disconnected)
         {
             SetStatusText("Connecting...");
@@ -254,14 +302,25 @@ public class MatchmakerClient : MonoBehaviour
             // Use overloads without CancellationToken on platforms with limited threading support
 #if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
             await _connection.StartAsync();
-            await _connection.InvokeAsync("Identify", _playerId);
 #else
             await _connection.StartAsync(ct);
-            await _connection.InvokeAsync("Identify", _playerId, ct);
 #endif
-            Debug.Log($"[Matchmaker][State] Connected and identified as {_playerId} (ConnectionId={_connection.ConnectionId ?? "null"})");
+            Debug.Log($"[Matchmaker][State] Connected transport for {_playerId} (ConnectionId={_connection.ConnectionId ?? "null"})");
             SetStatusText("Connected");
         }
+    }
+
+    private async Task IdentifyCurrentConnectionAsync(CancellationToken ct)
+    {
+        if (_connection == null || _connection.State != HubConnectionState.Connected)
+            return;
+
+#if UNITY_WEBGL || UNITY_ANDROID || UNITY_IOS
+        await _connection.InvokeAsync("Identify", _playerId);
+#else
+        await _connection.InvokeAsync("Identify", _playerId, ct);
+#endif
+        Debug.Log($"[Matchmaker][State] Identified {_playerId} on ConnectionId={_connection.ConnectionId ?? "null"}");
     }
 
     private async Task JoinViaSignalRAsync()
@@ -272,6 +331,7 @@ public class MatchmakerClient : MonoBehaviour
         try
         {
             await EnsureSignalRConnectedAsync(ct);
+            await IdentifyCurrentConnectionAsync(ct);
             var joinRequest = new PlayerJoinRequest
             {
                 PlayerId = _playerId,
@@ -310,6 +370,11 @@ public class MatchmakerClient : MonoBehaviour
                _connection != null &&
                _connection.State == HubConnectionState.Connected)
         {
+            if (QueueJoinedUtc == DateTime.MinValue)
+                StartQueueTimer(DateTime.UtcNow);
+            else
+                ResumeQueueTimer();
+
             iteration++;
             Debug.Log($"[Matchmaker][State] Heartbeat iteration {iteration} -> Ticket={_ticketId} ConnectionState={_connection.State}");
 
@@ -339,6 +404,13 @@ public class MatchmakerClient : MonoBehaviour
                 {
                     var err = task.Exception?.GetBaseException();
                     Debug.LogWarning($"[Matchmaker][SR] Heartbeat failed: {err?.Message}");
+                    if (ShouldInvalidateQueueOnHeartbeatFailure(err))
+                    {
+                        Debug.LogWarning("[Matchmaker][State] Discarding local queue ticket after heartbeat failure.");
+                        _heartbeatCo = null;
+                        CleanupQueueState("Queue lost");
+                        yield break;
+                    }
                 }
                 else if (task.IsCanceled)
                 {
@@ -350,9 +422,20 @@ public class MatchmakerClient : MonoBehaviour
                     if (ack == null)
                     {
                         Debug.LogWarning("[Matchmaker][SR] Heartbeat ack null");
+                        _heartbeatCo = null;
+                        CleanupQueueState("Queue lost");
+                        yield break;
                     }
                     else
                     {
+                        if (ack.Lease.Equals(default(QueueLease)))
+                        {
+                            Debug.LogWarning("[Matchmaker][SR] Heartbeat ack missing lease. Discarding local ticket.");
+                            _heartbeatCo = null;
+                            CleanupQueueState("Queue lost");
+                            yield break;
+                        }
+
                         UpdateLease(ack.Lease);
                         Debug.Log($"[Matchmaker][State] Heartbeat ack -> TTL {_ttlSeconds}s Ticket={_ticketId}");
                     }
@@ -363,15 +446,14 @@ public class MatchmakerClient : MonoBehaviour
             {
                 Debug.LogWarning("[Matchmaker][SR] Lease expired while waiting for heartbeat.");
                 Debug.Log("[Matchmaker][State] Lease expired while waiting for heartbeat response");
-                _queued = false;
-                Debug.Log($"[Matchmaker] _queued flagged true, IsQueued now {IsQueued}");
-                SetStatusText("Queue expired");
+                _heartbeatCo = null;
+                CleanupQueueState("Queue expired");
                 yield break;
             }
 
             var waitForTime = GetHeartbeatIntervalSeconds();
-            Debug.Log($"Waiting for {waitForTime}");
-            yield return new WaitForSeconds(waitForTime);
+            Debug.Log($"[Matchmaker][State] Waiting {waitForTime}s before next heartbeat (unscaled, timeScale={Time.timeScale})");
+            yield return new WaitForSecondsRealtime(waitForTime);
         }
         var exitReason = "unknown";
         if (!enableHeartbeat)
@@ -386,6 +468,8 @@ public class MatchmakerClient : MonoBehaviour
             exitReason = $"Connection state {_connection.State}";
 
         Debug.Log($"[Matchmaker][State] Heartbeat loop exiting -> Reason={exitReason} Queued={_queued} TicketSet={!string.IsNullOrEmpty(_ticketId)} ConnectionState={_connection?.State}");
+        PauseQueueTimer();
+        _heartbeatCo = null;
     }
 
     private async Task LeaveSignalRAsync()
@@ -432,6 +516,7 @@ public class MatchmakerClient : MonoBehaviour
         StopHeartbeat();
         _queued = false;
         _currentLease = null;
+        PauseQueueTimer();
 
         if (!string.IsNullOrEmpty(offer?.TicketId))
             _ticketId = offer.TicketId;
@@ -457,11 +542,12 @@ public class MatchmakerClient : MonoBehaviour
         {
             StopCoroutine(_heartbeatCo);
             _heartbeatCo = null;
+            PauseQueueTimer();
             Debug.Log("[Matchmaker][State] Heartbeat loop stopped");
         }
     }
 
-    private void CleanupQueueState(string status)
+    private void CleanupQueueState(string status, bool preserveRequeueIntent = false)
     {
         var previousTicket = _ticketId;
         var previousTtl = _ttlSeconds;
@@ -471,9 +557,146 @@ public class MatchmakerClient : MonoBehaviour
         _ttlSeconds = 0;
         _currentLease = null;
         _lastQueueState = null;
+        _queueElapsedBeforeCurrentRun = TimeSpan.Zero;
+        _queueTimerStartedUtc = DateTime.MinValue;
+        _queueTimerRunning = false;
         QueueJoinedUtc = DateTime.MinValue;
+        if (!preserveRequeueIntent)
+            _shouldRequeueOnReconnect = false;
+        if (_activeQueueInstance == this)
+            _activeQueueInstance = null;
         SetStatusText(status);
         Debug.Log($"[Matchmaker][State] Queue state reset -> {status} (Ticket={previousTicket ?? "none"} TTL={previousTtl}s)");
+    }
+
+    private void HandleReconnectStarted()
+    {
+        var hadQueueSession = _queued || !string.IsNullOrEmpty(_ticketId) || HasQueueSession;
+        if (!hadQueueSession)
+        {
+            SetStatusText("Reconnecting...");
+            return;
+        }
+
+        _shouldRequeueOnReconnect = true;
+        CleanupQueueState("Reconnecting...", preserveRequeueIntent: true);
+    }
+
+    private async void HandleReconnected()
+    {
+        try
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var ct = _cts.Token;
+
+            await IdentifyCurrentConnectionAsync(ct);
+
+            if (_shouldRequeueOnReconnect)
+            {
+                _shouldRequeueOnReconnect = false;
+                SetStatusText("Reconnected. Requeueing...");
+                await JoinViaSignalRAsync();
+                return;
+            }
+
+            SetStatusText("Reconnected");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Matchmaker][State] Reconnect recovery failed: {ex.Message}");
+            HandleTerminalDisconnect("Disconnected");
+        }
+    }
+
+    private void HandleTerminalDisconnect(string status)
+    {
+        var hadQueueSession = _queued || !string.IsNullOrEmpty(_ticketId) || HasQueueSession;
+        _cts?.Cancel();
+        _shouldRequeueOnReconnect = false;
+
+        if (hadQueueSession)
+            CleanupQueueState(status);
+        else
+            SetStatusText(status);
+
+        _ = ResetConnectionAsync();
+    }
+
+    private async Task ResetConnectionAsync()
+    {
+        if (_isResettingConnection)
+            return;
+
+        var connectionToDispose = _connection;
+        if (connectionToDispose == null)
+            return;
+
+        _isResettingConnection = true;
+        _connection = null;
+
+        try
+        {
+            try
+            {
+                await connectionToDispose.StopAsync();
+            }
+            catch { }
+
+            try
+            {
+                await connectionToDispose.DisposeAsync();
+            }
+            catch { }
+        }
+        finally
+        {
+            _isResettingConnection = false;
+        }
+    }
+
+    private void StartQueueTimer(DateTime joinedUtc)
+    {
+        _activeQueueInstance = this;
+        QueueJoinedUtc = joinedUtc;
+        _queueElapsedBeforeCurrentRun = TimeSpan.Zero;
+        _queueTimerStartedUtc = joinedUtc;
+        _queueTimerRunning = true;
+    }
+
+    private void ResumeQueueTimer()
+    {
+        if (!_queued || QueueJoinedUtc == DateTime.MinValue || _queueTimerRunning)
+            return;
+
+        _activeQueueInstance = this;
+        _queueTimerStartedUtc = DateTime.UtcNow;
+        _queueTimerRunning = true;
+    }
+
+    private void PauseQueueTimer()
+    {
+        if (!_queueTimerRunning)
+            return;
+
+        _queueElapsedBeforeCurrentRun += DateTime.UtcNow - _queueTimerStartedUtc;
+        _queueTimerStartedUtc = DateTime.MinValue;
+        _queueTimerRunning = false;
+    }
+
+    private void EnsureHeartbeatLoopRunning()
+    {
+        if (!_queued || string.IsNullOrEmpty(_ticketId) || !enableHeartbeat)
+            return;
+
+        if (_connection == null || _connection.State != HubConnectionState.Connected)
+            return;
+
+        if (_heartbeatCo != null)
+            return;
+
+        ResumeQueueTimer();
+        _heartbeatCo = StartCoroutine(HeartbeatSignalRLoop());
     }
 
     private void UpdateLease(QueueLease? lease)
@@ -509,6 +732,30 @@ public class MatchmakerClient : MonoBehaviour
         var lease = _currentLease.Value;
         var grace = Mathf.Max(0, lease.HeartbeatGraceSeconds);
         return DateTime.UtcNow > lease.ExpiresAtUtc.AddSeconds(grace);
+    }
+
+    private static bool ShouldInvalidateQueueOnHeartbeatFailure(Exception err)
+    {
+        if (err == null)
+            return false;
+
+        var message = err.Message ?? string.Empty;
+        if (message.IndexOf("ticket", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        if (message.IndexOf("queue", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        if (message.IndexOf("lease", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        if (message.IndexOf("not found", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        if (message.IndexOf("expired", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        return false;
     }
 
     private string BuildQueueStatus(PlayerJoinResponse resp)
@@ -574,5 +821,10 @@ public class MatchmakerClient : MonoBehaviour
             }
         }
         catch { }
+        finally
+        {
+            if (_activeQueueInstance == this)
+                _activeQueueInstance = null;
+        }
     }
 }
