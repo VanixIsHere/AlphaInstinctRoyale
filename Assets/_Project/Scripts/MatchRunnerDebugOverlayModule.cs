@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 using AIR.Shared.GameSession;
 using UnityEngine;
 
@@ -51,9 +52,13 @@ public class MatchRunnerDebugOverlayModule : DebugOverlayModule
 
         if (verbosity == DebugOverlayVerbosity.Verbose)
         {
+            PlayerSnapshot localPlayer = gameManager.GetLocalPlayerSnapshot();
+            int currentFieldCount = localPlayer?.Field?.Slots.Count(slot => slot.Unit != null) ?? 0;
+            int maxFieldCount = localPlayer?.MaxFieldedUnits ?? 3;
             builder.Append("Fixed Tick: ").Append(runner.FixedTickSeconds.ToString("F3")).Append("s").AppendLine();
             builder.Append("Current Round UI: ").Append(gameManager.currentRound).AppendLine();
-            builder.Append("Gold: ").Append(gameManager.GetLocalPlayerSnapshot()?.Economy?.Gold ?? gameManager.startGold).AppendLine();
+            builder.Append("Gold: ").Append(localPlayer?.Economy?.Gold ?? gameManager.startGold).AppendLine();
+            builder.Append("Fielded Units: ").Append(currentFieldCount).Append('/').Append(maxFieldCount).AppendLine();
             builder.Append("Frame dt: ").Append(Time.deltaTime.ToString("F4")).Append("s").AppendLine();
         }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using AIR.Shared.GameSession;
 
@@ -30,6 +29,7 @@ public class BenchManager : MonoBehaviour
     [SerializeField] private bool allowBenchUnitInteraction = true;
 
     private Transform[] benchSlots;
+    private BenchSlotDropTarget[] dropTargets;
     private UnitInstance[] occupiedInstances;
     private readonly Dictionary<string, UnitDataSO> unitLookup = new();
 
@@ -72,6 +72,7 @@ public class BenchManager : MonoBehaviour
     void GenerateBenchSlots()
     {
         benchSlots = new Transform[benchSlotCount];
+        dropTargets = new BenchSlotDropTarget[benchSlotCount];
         occupiedInstances = new UnitInstance[benchSlotCount];
 
         float totalWidth = (benchSlotCount - 1) * slotSpacing;
@@ -85,6 +86,14 @@ public class BenchManager : MonoBehaviour
             GameObject slot = Instantiate(slotVisualPrefab, worldPos, Quaternion.identity, transform);
             slot.name = $"BenchSlot{i}";
             benchSlots[i] = slot.transform;
+            BenchSlotDropTarget dropTarget = slot.GetComponent<BenchSlotDropTarget>();
+            if (dropTarget == null)
+            {
+                dropTarget = slot.AddComponent<BenchSlotDropTarget>();
+            }
+
+            dropTarget.Initialize(i);
+            dropTargets[i] = dropTarget;
         }
     }
 
@@ -108,6 +117,11 @@ public class BenchManager : MonoBehaviour
         return benchSlots[slotIndex];
     }
 
+    public IReadOnlyList<BenchSlotDropTarget> GetDropTargets()
+    {
+        return dropTargets ?? Array.Empty<BenchSlotDropTarget>();
+    }
+
     /// <summary>
     /// Spawns the played unit to the bench
     /// </summary>
@@ -116,7 +130,7 @@ public class BenchManager : MonoBehaviour
     /// <returns></returns>
     UnitInstance SpawnUnit(UnitDataSO unit, Transform slot, int slotIndex)
     {
-        if (GetUnitPrefab(unit.UnitSizeClassification) is not GameObject unitPrefab)
+        if (UnitVisualFactory.GetUnitPrefab(unit.UnitSizeClassification) is not GameObject unitPrefab)
         {
             return null;
         }
@@ -141,13 +155,13 @@ public class BenchManager : MonoBehaviour
         inst.Init(unit);
         inst.BindToBench(this, slotIndex, slot);
 
-        BenchUnitInteraction interaction = instanceObj.GetComponent<BenchUnitInteraction>();
+        UnitDragInteraction interaction = instanceObj.GetComponent<UnitDragInteraction>();
         if (interaction == null)
         {
-            interaction = instanceObj.AddComponent<BenchUnitInteraction>();
+            interaction = instanceObj.AddComponent<UnitDragInteraction>();
         }
 
-        interaction.Initialize(this, inst);
+        interaction.Initialize(inst);
 
         return inst;
     }
@@ -249,16 +263,4 @@ public class BenchManager : MonoBehaviour
     /// <param name="unitSizeClassification"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    internal GameObject GetUnitPrefab(UnitSizeClassificationEnum unitSizeClassification)
-    {
-        return unitSizeClassification switch
-        {
-            UnitSizeClassificationEnum.TINY => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/TinyUnit.prefab"),
-            UnitSizeClassificationEnum.SMALL => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/SmallUnit.prefab"),
-            UnitSizeClassificationEnum.MEDIUM => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/MediumUnit.prefab"),
-            UnitSizeClassificationEnum.LARGE => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/LargeUnit.prefab"),
-            UnitSizeClassificationEnum.EXTRALARGE => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Units/ExtraLargeUnit.prefab"),
-            _ => throw new NotImplementedException()
-        };
-    }
 }

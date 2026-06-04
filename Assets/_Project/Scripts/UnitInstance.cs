@@ -1,5 +1,6 @@
 using UnityEngine;
 using AIRBattleSimulation;
+using AIR.Shared.GameSession;
 
 public class UnitInstance : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class UnitInstance : MonoBehaviour
     public BenchManager OwningBench { get; private set; }
     public int BenchSlotIndex { get; private set; } = -1;
     public Transform BenchSlotTransform { get; private set; }
+    public string FieldTileId { get; private set; } = string.Empty;
+    public Transform FieldTileTransform { get; private set; }
+    public UnitContainerType ContainerType { get; private set; } = UnitContainerType.Bench;
 
     public void Init(UnitDataSO data, int level = 1, int? currentHealthOverride = null, string runtimeUnitId = "")
     {
@@ -36,5 +40,18 @@ public class UnitInstance : MonoBehaviour
         OwningBench = bench;
         BenchSlotIndex = slotIndex;
         BenchSlotTransform = slotTransform;
+        FieldTileId = string.Empty;
+        FieldTileTransform = null;
+        ContainerType = UnitContainerType.Bench;
+    }
+
+    public void BindToField(string tileId, Transform tileTransform)
+    {
+        OwningBench = null;
+        BenchSlotIndex = -1;
+        BenchSlotTransform = null;
+        FieldTileId = tileId;
+        FieldTileTransform = tileTransform;
+        ContainerType = UnitContainerType.Field;
     }
 }

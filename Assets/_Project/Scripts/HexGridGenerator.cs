@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using AIR.Shared.GameSession;
 
@@ -11,6 +12,7 @@ public class HexGridGenerator : MonoBehaviour
     public float hexSize = 1f;
 
     private ArenaState generatedArena;
+    private readonly Dictionary<string, HexCell> cellsByTileId = new(StringComparer.Ordinal);
 
     public int ArenaWidth => generatedArena?.Config?.Width ?? bootstrapWidth;
     public int ArenaHeight => generatedArena?.Config?.Height ?? bootstrapHeight;
@@ -19,9 +21,15 @@ public class HexGridGenerator : MonoBehaviour
         Width = bootstrapWidth,
         Height = bootstrapHeight,
     };
+    public IReadOnlyDictionary<string, HexCell> CellsByTileId => cellsByTileId;
 
     void Start()
     {
+        if (GetComponent<FieldManager>() == null)
+        {
+            gameObject.AddComponent<FieldManager>();
+        }
+
         SubscribeToAuthority();
         RenderArena(BuildInitialArena());
     }
@@ -74,6 +82,7 @@ public class HexGridGenerator : MonoBehaviour
 
         generatedArena = arena;
         ClearGridVisuals();
+        cellsByTileId.Clear();
 
         float xOffset = Mathf.Sqrt(3f) * hexSize;
         float yOffset = 1.5f * hexSize;
@@ -87,7 +96,9 @@ public class HexGridGenerator : MonoBehaviour
             );
 
             GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, transform);
-            hex.GetComponent<HexCell>().Init(tile);
+            HexCell cell = hex.GetComponent<HexCell>();
+            cell.Init(tile);
+            cellsByTileId[tile.TileId] = cell;
         }
 
         CreateGridCenterAndPositionCamera(xOffset, yOffset, arena.Config.Width, arena.Config.Height);
@@ -120,6 +131,12 @@ public class HexGridGenerator : MonoBehaviour
                 DestroyImmediate(existingCenter);
             }
         }
+    }
+
+    public HexCell GetCell(string tileId)
+    {
+        cellsByTileId.TryGetValue(tileId, out HexCell cell);
+        return cell;
     }
 
     void CreateGridCenterAndPositionCamera(float xOffset, float yOffset, int width, int height)

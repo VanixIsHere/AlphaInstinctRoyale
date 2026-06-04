@@ -1,69 +1,24 @@
 using UnityEngine;
-using AIR.Shared.GameSession;
 
-public class HexCell : MonoBehaviour
+[DisallowMultipleComponent]
+public class BenchSlotDropTarget : MonoBehaviour
 {
     [SerializeField] private Color playableColor = new(0.2f, 0.8f, 1f, 0.75f);
     [SerializeField] private Color validColor = new(0.2f, 1f, 0.2f, 0.9f);
     [SerializeField] private Color invalidColor = new(1f, 0.25f, 0.25f, 0.9f);
 
-    private Renderer[] surfaceRenderers = System.Array.Empty<Renderer>();
-
-    public int q;
-    public int r;
-    public string tileId;
+    public int SlotIndex { get; private set; } = -1;
     public PlacementHighlightState HighlightState { get; private set; }
 
-    public void Init(int q, int r)
+    public void Initialize(int slotIndex)
     {
-        Init(new ArenaTileState
-        {
-            TileId = HexArenaUtils.FormatTileId(q, r),
-            Q = q,
-            R = r,
-        });
-    }
-
-    public void Init(ArenaTileState tile)
-    {
-        if (tile == null)
-        {
-            return;
-        }
-
-        q = tile.Q;
-        r = tile.R;
-        tileId = tile.TileId;
-        surfaceRenderers = GetComponentsInChildren<Renderer>();
-
-        name = $"HexCell ({q}, {r})";
-
-        // Create a text label
-        GameObject labelObj = new GameObject("Label");
-        labelObj.transform.SetParent(transform);
-        labelObj.transform.localPosition = new Vector3(0, 0.1f, 0);
-        labelObj.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-        
-        var textMesh = labelObj.AddComponent<TextMesh>();
-        textMesh.text = tileId;
-        textMesh.characterSize = 0.2f;
-        textMesh.fontSize = 32;
-        textMesh.anchor = TextAnchor.MiddleCenter;
-        textMesh.alignment = TextAlignment.Center;
-        textMesh.color = Color.black;
-
-        labelObj.AddComponent<WorldLabel>();
+        SlotIndex = slotIndex;
         EnsureCollider();
     }
 
     public void SetHighlightState(PlacementHighlightState state)
     {
         HighlightState = state;
-    }
-
-    public Bounds GetSurfaceWorldBounds()
-    {
-        return GetWorldBounds(surfaceOnly: true);
     }
 
     private void EnsureCollider()
@@ -74,16 +29,16 @@ public class HexCell : MonoBehaviour
         }
 
         BoxCollider collider = gameObject.AddComponent<BoxCollider>();
-        Bounds? surfaceBounds = TryGetWorldBounds(surfaceOnly: true);
-        if (surfaceBounds.HasValue)
+        Renderer renderer = GetComponentInChildren<Renderer>();
+        if (renderer != null)
         {
-            Bounds localBounds = GetLocalBoundsFromWorldBounds(surfaceBounds.Value);
+            Bounds localBounds = GetLocalBoundsFromWorldBounds(renderer.bounds);
             collider.center = localBounds.center;
             collider.size = localBounds.size;
         }
         else
         {
-            collider.size = new Vector3(1f, 0.1f, 1f);
+            collider.size = new Vector3(1f, 0.2f, 1f);
             collider.center = Vector3.zero;
         }
     }
@@ -130,31 +85,16 @@ public class HexCell : MonoBehaviour
             _ => playableColor,
         };
 
-        Bounds bounds = GetWorldBounds(surfaceOnly: true);
+        Bounds bounds = GetWorldBounds();
         Gizmos.DrawWireCube(bounds.center, bounds.size + new Vector3(0.05f, 0.05f, 0.05f));
     }
 
-    private Bounds GetWorldBounds(bool surfaceOnly)
+    private Bounds GetWorldBounds()
     {
-        Bounds? bounds = TryGetWorldBounds(surfaceOnly);
-        if (!bounds.HasValue)
-        {
-            return new Bounds(transform.position, new Vector3(1f, 0.1f, 1f));
-        }
-
-        return bounds.Value;
-    }
-
-    private Bounds? TryGetWorldBounds(bool surfaceOnly)
-    {
-        Renderer[] renderers = surfaceOnly && surfaceRenderers.Length > 0
-            ? surfaceRenderers
-            : GetComponentsInChildren<Renderer>();
-
-        renderers = System.Array.FindAll(renderers, renderer => renderer != null);
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
         if (renderers.Length == 0)
         {
-            return null;
+            return new Bounds(transform.position, new Vector3(1f, 0.1f, 1f));
         }
 
         Bounds bounds = renderers[0].bounds;

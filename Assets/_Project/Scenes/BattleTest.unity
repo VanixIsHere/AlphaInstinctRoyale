@@ -862,8 +862,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hexPrefab: {fileID: 7501520096818386974, guid: b6d7acdaec39c5c4988eb92149d1a87e, type: 3}
-  bootstrapWidth: 10
-  bootstrapHeight: 9
+  bootstrapWidth: 11
+  bootstrapHeight: 7
   hexSize: 1
 --- !u!4 &399003377
 Transform:
@@ -2406,6 +2406,7 @@ MonoBehaviour:
   currentRound: 1
   goldText: {fileID: 1151324500}
   roundText: {fileID: 639217740}
+  fieldCountText: {fileID: 0}
 --- !u!114 &7134598563238765468
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -35,6 +35,11 @@ public static class Utils
     public static void StandOnTop(GameObject standing, GameObject baseObj)
     {
         var baseBounds = GetWorldBounds(baseObj);
+        StandOnTop(standing, baseBounds);
+    }
+
+    public static void StandOnTop(GameObject standing, Bounds baseBounds)
+    {
         var standBounds = GetWorldBounds(standing);
 
         // Move standing object so its bottom touches base's top

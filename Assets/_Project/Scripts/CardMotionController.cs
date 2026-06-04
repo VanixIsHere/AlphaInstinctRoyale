@@ -59,6 +59,12 @@ namespace CardSystem
         private Vector2 wobbleAngle = Vector2.zero;
         private Vector2 wobbleVelocity = Vector2.zero;
 
+        private bool IsUnitBeingDragged()
+        {
+            UnitPlacementCoordinator coordinator = FindFirstObjectByType<UnitPlacementCoordinator>();
+            return coordinator != null && coordinator.IsAnyUnitDragging;
+        }
+
         private void Awake()
         {
             mainCamera = Camera.main;
@@ -84,7 +90,7 @@ namespace CardSystem
                 return;
             }
 
-            if (BenchUnitInteraction.IsAnyUnitDragging && !state.IsDragging)
+            if (IsUnitBeingDragged() && !state.IsDragging)
             {
                 state.IsHovering = false;
                 return;
@@ -251,7 +257,7 @@ namespace CardSystem
                 return;
             if (handManager != null && !handManager.AreCardsInteractable())
                 return;
-            if (BenchUnitInteraction.IsAnyUnitDragging)
+            if (IsUnitBeingDragged())
                 return;
             bool canHover = true;
             if (handManager != null)
@@ -279,7 +285,7 @@ namespace CardSystem
                 return;
             if (handManager != null && !handManager.AreCardsInteractable())
                 return;
-            if (BenchUnitInteraction.IsAnyUnitDragging)
+            if (IsUnitBeingDragged())
                 return;
             handManager.OnCardDragChanged(gameObject, true);
             BeginDrag();
@@ -313,7 +319,7 @@ namespace CardSystem
                 return;
             }
 
-            if (BenchUnitInteraction.IsAnyUnitDragging)
+            if (IsUnitBeingDragged())
             {
                 return;
             }

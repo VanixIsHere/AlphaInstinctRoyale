@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using System.Linq;
 using AIR.Shared.GameSession;
 using CardSystem;
 
@@ -27,6 +28,7 @@ public class GameManager : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI goldText;
     public TextMeshProUGUI roundText;
+    public TextMeshProUGUI fieldCountText;
 
     public MatchRunner MatchRunner => Runner;
     public IMatchAuthorityClient AuthorityClient => authorityClient;
@@ -48,6 +50,7 @@ public class GameManager : MonoBehaviour
         authorityClient = new LocalMatchAuthorityClient(Runner);
         authorityClient.SnapshotUpdated += HandleAuthoritySnapshotUpdated;
         EnsureDebugOverlay();
+        EnsurePlacementCoordinator();
         EnsureMusicDirectorReference();
     }
 
@@ -83,6 +86,12 @@ public class GameManager : MonoBehaviour
 
         if (roundText != null)
             roundText.text = $"Round {displayedRound}";
+
+        PlayerSnapshot localPlayer = GetLocalPlayerSnapshot();
+        int currentFieldCount = localPlayer?.Field?.Slots?.Count(slot => slot.Unit != null) ?? 0;
+        int maxFieldCount = localPlayer?.MaxFieldedUnits ?? 3;
+        if (fieldCountText != null)
+            fieldCountText.text = $"{currentFieldCount}/{maxFieldCount}";
     }
 
     void Update()
@@ -191,6 +200,14 @@ public class GameManager : MonoBehaviour
     private void EnsureMusicDirectorReference()
     {
         musicDirector = GetComponent<MatchMusicDirector>();
+    }
+
+    private void EnsurePlacementCoordinator()
+    {
+        if (GetComponent<UnitPlacementCoordinator>() == null)
+        {
+            gameObject.AddComponent<UnitPlacementCoordinator>();
+        }
     }
 
     public PlayerSnapshot GetLocalPlayerSnapshot()
