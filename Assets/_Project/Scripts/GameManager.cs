@@ -8,6 +8,7 @@ using CardSystem;
 public class GameManager : MonoBehaviour
 {
     public const string LocalPlayerId = "local-player";
+    public const string OpponentPlayerId = "debug-opponent-player";
 
     public static GameManager Instance { get; private set; }
     
@@ -18,6 +19,8 @@ public class GameManager : MonoBehaviour
     private Phase? lastKnownSnapshotPhase;
     private int lastLoggedRemainingSeconds = int.MinValue;
     private int lastKnownRound = -1;
+    private int lastPublishedSnapshotTick = -1;
+    private Phase? lastPresentedBattlePhase;
 
     public int testTick = 0;
 
@@ -47,7 +50,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject); // Optional: persists across scenes
         Runner = new MatchRunner();
-        authorityClient = new LocalMatchAuthorityClient(Runner);
+        authorityClient = new LocalMatchAuthorityClient(Runner, LocalPlayerId);
         authorityClient.SnapshotUpdated += HandleAuthoritySnapshotUpdated;
         EnsureDebugOverlay();
         EnsurePlacementCoordinator();
@@ -96,14 +99,26 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        if (Runner == null)
+        {
+            return;
+        }
+
         if (Runner.isActive)
         {
             Runner.Advance(Time.deltaTime);
             testTick = Runner.TickIndex;
             currentRound = Runner.RoundIndex;
+            if (Runner.Phase == Phase.Battle && Runner.TickIndex != lastPublishedSnapshotTick)
+            {
+                lastPublishedSnapshotTick = Runner.TickIndex;
+                authorityClient?.RefreshSnapshot();
+            }
+
             if (Runner.Phase != lastKnownSnapshotPhase)
             {
                 lastKnownSnapshotPhase = Runner.Phase;
+                lastPublishedSnapshotTick = Runner.TickIndex;
                 authorityClient?.RefreshSnapshot();
             }
 
@@ -140,6 +155,7 @@ public class GameManager : MonoBehaviour
         lastKnownSnapshotPhase = null;
         lastLoggedRemainingSeconds = int.MinValue;
         lastKnownRound = -1;
+        lastPublishedSnapshotTick = -1;
     }
 
     private void LogMatchPhaseDebug()
@@ -191,6 +207,11 @@ public class GameManager : MonoBehaviour
             gameObject.AddComponent<MatchRunnerDebugOverlayModule>();
         }
 
+        if (GetComponent<BattleSimulationDebugOverlayModule>() == null)
+        {
+            gameObject.AddComponent<BattleSimulationDebugOverlayModule>();
+        }
+
         if (GetComponent<MatchMusicDebugOverlayModule>() == null)
         {
             gameObject.AddComponent<MatchMusicDebugOverlayModule>();
@@ -220,7 +241,8 @@ public class GameManager : MonoBehaviour
         MatchStartConfig config = new()
         {
             StartingGold = startGold,
-            PlayerIds = { LocalPlayerId },
+            PlayerIds = { LocalPlayerId, OpponentPlayerId },
+            EnableDebugEnemyTeamGeneration = Debug.isDebugBuild,
         };
 
         HexGridGenerator gridGenerator = FindFirstObjectByType<HexGridGenerator>();
@@ -258,8 +280,27 @@ public class GameManager : MonoBehaviour
 
     private void HandleAuthoritySnapshotUpdated(MatchSnapshot snapshot)
     {
+        HandleBattlePresentationPhase(snapshot);
         SnapshotUpdated?.Invoke(snapshot);
         UpdateUI();
+    }
+
+    private void HandleBattlePresentationPhase(MatchSnapshot snapshot)
+    {
+        if (snapshot == null || lastPresentedBattlePhase == snapshot.Phase)
+        {
+            return;
+        }
+
+        lastPresentedBattlePhase = snapshot.Phase;
+        if (snapshot.Phase == Phase.Battle)
+        {
+            NotifyLocalBattleStarted();
+        }
+        else if (snapshot.Phase == Phase.BattleResolve || snapshot.Phase == Phase.PostBattleSync || snapshot.Phase == Phase.RoundEnd)
+        {
+            NotifyLocalBattleEnded();
+        }
     }
 }
 
@@ -274,10 +315,12 @@ public interface IMatchAuthorityClient
 public sealed class LocalMatchAuthorityClient : IMatchAuthorityClient
 {
     private readonly MatchRunner runner;
+    private readonly string viewerPlayerId;
 
-    public LocalMatchAuthorityClient(MatchRunner runner)
+    public LocalMatchAuthorityClient(MatchRunner runner, string viewerPlayerId)
     {
         this.runner = runner;
+        this.viewerPlayerId = viewerPlayerId;
     }
 
     public MatchSnapshot CurrentSnapshot { get; private set; } = new();
@@ -286,14 +329,14 @@ public sealed class LocalMatchAuthorityClient : IMatchAuthorityClient
     public CommandResult SendCommand(MatchCommand command)
     {
         CommandResult result = runner.ProcessCommand(command);
-        CurrentSnapshot = result.Snapshot;
+        CurrentSnapshot = runner.GetSnapshotForViewer(viewerPlayerId);
         SnapshotUpdated?.Invoke(CurrentSnapshot);
         return result;
     }
 
     public void RefreshSnapshot()
     {
-        CurrentSnapshot = runner.CurrentSnapshot;
+        CurrentSnapshot = runner.GetSnapshotForViewer(viewerPlayerId);
         SnapshotUpdated?.Invoke(CurrentSnapshot);
     }
 }

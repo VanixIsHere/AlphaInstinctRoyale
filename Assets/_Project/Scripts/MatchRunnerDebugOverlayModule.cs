@@ -78,3 +78,136 @@ public class MatchRunnerDebugOverlayModule : DebugOverlayModule
         };
     }
 }
+
+[DisallowMultipleComponent]
+public class BattleSimulationDebugOverlayModule : DebugOverlayModule
+{
+    private GameManager gameManager;
+
+    private void Awake()
+    {
+        gameManager = GetComponent<GameManager>();
+    }
+
+    public override void BuildContent(StringBuilder builder, DebugOverlayVerbosity verbosity)
+    {
+        gameManager ??= GetComponent<GameManager>();
+        MatchSnapshot snapshot = gameManager?.CurrentSnapshot;
+        BattleInstanceState battle = snapshot?.BattleInstance;
+        if (battle == null)
+        {
+            builder.Append("No active battle snapshot.");
+            return;
+        }
+
+        builder.Append("Battle Id: ").Append(battle.BattleInstanceId).AppendLine();
+        builder.Append("Resolved: ").Append(battle.IsResolved ? "<color=#7CFC00>true</color>" : "<color=#FF7A7A>false</color>").AppendLine();
+        builder.Append("Winner: ").Append(string.IsNullOrWhiteSpace(battle.WinningPlayerId) ? "-" : battle.WinningPlayerId).AppendLine();
+        builder.Append("Sim Tick: ").Append(battle.LastSimulatedTick).AppendLine();
+        builder.Append("Units: ").Append(battle.Units.Count).AppendLine();
+        builder.Append("Recent Events: ").Append(battle.RecentEvents.Count).AppendLine();
+
+        if (verbosity != DebugOverlayVerbosity.Verbose)
+        {
+            return;
+        }
+
+        foreach (BattleUnitState unit in battle.Units
+                     .OrderBy(unit => unit.OwnerPlayerId, System.StringComparer.Ordinal)
+                     .ThenBy(unit => unit.RuntimeUnitId, System.StringComparer.Ordinal)
+                     .Take(8))
+        {
+            builder.Append(unit.OwnerPlayerId).Append(" | ")
+                .Append(unit.UnitKey).Append(" | ")
+                .Append(unit.CurrentTileId).Append(" | HP ")
+                .Append(unit.CurrentHealth).Append('/').Append(unit.MaxHealth).Append(" | ")
+                .Append(unit.IsAlive ? "Alive" : "Dead");
+
+            if (!string.IsNullOrWhiteSpace(unit.CurrentTargetUnitId))
+            {
+                builder.Append(" | Tgt ").Append(unit.CurrentTargetUnitId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.MovementTargetTileId))
+            {
+                float progress = unit.MovementDurationSeconds > 0f
+                    ? Mathf.Clamp01(unit.MovementElapsedSeconds / unit.MovementDurationSeconds)
+                    : 0f;
+                builder.Append(" | Move ").Append(unit.MovementStartTileId)
+                    .Append("->").Append(unit.MovementTargetTileId)
+                    .Append(" ").Append(progress.ToString("P0"));
+            }
+
+            if (unit.CurrentActionType != BattleUnitActionType.Idle)
+            {
+                float actionProgress = unit.CurrentActionDurationSeconds > 0f
+                    ? Mathf.Clamp01(unit.CurrentActionElapsedSeconds / unit.CurrentActionDurationSeconds)
+                    : 0f;
+                builder.Append(" | Act ").Append(unit.CurrentActionType)
+                    .Append(" ").Append(unit.CurrentActionOriginTileId)
+                    .Append("->").Append(unit.CurrentActionDestinationTileId)
+                    .Append(" ").Append(actionProgress.ToString("P0"));
+
+                if (unit.CurrentActionType == BattleUnitActionType.Attacking)
+                {
+                    float executionProgress = unit.CurrentActionExecutionDelaySeconds > 0f
+                        ? Mathf.Clamp01(unit.CurrentActionElapsedSeconds / unit.CurrentActionExecutionDelaySeconds)
+                        : (unit.CurrentActionHasExecuted ? 1f : 0f);
+                    builder.Append(" hit ").Append(executionProgress.ToString("P0"));
+                    builder.Append(unit.CurrentActionHasExecuted ? " done" : " windup");
+                }
+
+                if (!string.IsNullOrWhiteSpace(unit.CurrentActionTargetUnitId))
+                {
+                    builder.Append(" tgt ").Append(unit.CurrentActionTargetUnitId);
+                }
+            }
+
+            if (unit.LastResolvedActionType != BattleUnitActionType.Idle)
+            {
+                builder.Append(" | Last ").Append(unit.LastResolvedActionType)
+                    .Append(" @").Append(unit.LastResolvedActionTick);
+            }
+
+            builder.Append(" | CD ").Append(unit.AttackCooldownSecondsRemaining.ToString("F2")).AppendLine();
+        }
+
+        if (battle.RecentEvents.Count > 0)
+        {
+            builder.AppendLine("Events:");
+            foreach (BattleEventState battleEvent in battle.RecentEvents.TakeLast(6))
+            {
+                builder.Append("  #").Append(battleEvent.EventSequenceId)
+                    .Append(" [").Append(battleEvent.TickIndex).Append("] ")
+                    .Append(battleEvent.ActionType).Append('/')
+                    .Append(battleEvent.EventType).Append(" ")
+                    .Append(string.IsNullOrWhiteSpace(battleEvent.SourceUnitId) ? "-" : battleEvent.SourceUnitId)
+                    .Append(" -> ")
+                    .Append(string.IsNullOrWhiteSpace(battleEvent.TargetUnitId) ? "-" : battleEvent.TargetUnitId);
+
+                if (battleEvent.DamageSourceType.HasValue)
+                {
+                    builder.Append(" ").Append(battleEvent.DamageSourceType.Value);
+                }
+
+                if (battleEvent.Amount > 0)
+                {
+                    builder.Append(" (").Append(battleEvent.Amount).Append(')');
+                }
+
+                if (!string.IsNullOrWhiteSpace(battleEvent.OriginTileId) || !string.IsNullOrWhiteSpace(battleEvent.DestinationTileId))
+                {
+                    builder.Append(" ").Append(string.IsNullOrWhiteSpace(battleEvent.OriginTileId) ? "-" : battleEvent.OriginTileId)
+                        .Append("->")
+                        .Append(string.IsNullOrWhiteSpace(battleEvent.DestinationTileId) ? "-" : battleEvent.DestinationTileId);
+                }
+                else if (!string.IsNullOrWhiteSpace(battleEvent.TileId))
+                {
+                    builder.Append(" @ ").Append(battleEvent.TileId);
+                }
+
+                builder.AppendLine();
+            }
+        }
+    }
+}

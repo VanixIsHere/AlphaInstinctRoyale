@@ -42,6 +42,7 @@ public class MatchMusicDirector : MonoBehaviour
     [SerializeField] private double seamToleranceSeconds = 0.05d;
     [SerializeField] private double postBattleScheduleLeadSeconds = 0.15d;
     [SerializeField] private bool fallbackToPostBattleOnAuthoritativeResolve = true;
+    [SerializeField] private float battleTimeoutDetectionLeewaySeconds = 0.1f;
 
     public MatchMusicState CurrentMusicState { get; private set; } = MatchMusicState.Idle;
     public Phase? CurrentAuthorityPhase => lastObservedPhase;
@@ -65,6 +66,7 @@ public class MatchMusicDirector : MonoBehaviour
     private bool postBattleLoopQueued;
     private bool postBattleNextScheduled;
     private PostBattleLoopVariant queuedPostBattleVariant = PostBattleLoopVariant.None;
+    private float lastObservedBattlePhaseElapsedSeconds;
 
     private void Awake()
     {
@@ -90,6 +92,7 @@ public class MatchMusicDirector : MonoBehaviour
             }
 
             lastObservedPhase = null;
+            lastObservedBattlePhaseElapsedSeconds = 0f;
             return;
         }
 
@@ -97,6 +100,11 @@ public class MatchMusicDirector : MonoBehaviour
         {
             lastObservedPhase = runner.Phase;
             HandleAuthoritativePhaseChange(runner.Phase);
+        }
+
+        if (runner.Phase == Phase.Battle)
+        {
+            lastObservedBattlePhaseElapsedSeconds = runner.PhaseElapsedSeconds;
         }
 
         UpdateQueuedPreBattleLoop(runner.Phase);
@@ -113,12 +121,6 @@ public class MatchMusicDirector : MonoBehaviour
     public void NotifyLocalBattleEnded()
     {
         LocalBattleEnded = true;
-        if (lastObservedPhase == Phase.Setup || lastObservedPhase == Phase.RoundStart || lastObservedPhase == Phase.GameStart)
-        {
-            return;
-        }
-
-        ContinueOrQueuePostBattleFlow("local battle ended");
     }
 
     private void HandleAuthoritativePhaseChange(Phase phase)
@@ -151,19 +153,20 @@ public class MatchMusicDirector : MonoBehaviour
             case Phase.BattleResolve:
             case Phase.PostBattleSync:
             case Phase.RoundEnd:
+                bool battleEndedByTimer = DidLastBattleEndByTimer();
                 if (LocalBattleEnded)
                 {
-                    ContinueOrQueuePostBattleFlow($"authority entered {phase}");
+                    ContinueOrQueuePostBattleFlow($"authority entered {phase}", battleEndedByTimer);
                 }
                 else if (fallbackToPostBattleOnAuthoritativeResolve)
                 {
                     LocalBattleEnded = true;
-                    ContinueOrQueuePostBattleFlow($"authority fallback on {phase}");
+                    ContinueOrQueuePostBattleFlow($"authority fallback on {phase}", battleEndedByTimer);
                 }
                 break;
 
             case Phase.GameEnd:
-                EnterPostBattleLoop("authority entered game end");
+                EnterPostBattleLoop("authority entered game end", GetInitialPostBattleVariant());
                 break;
         }
     }
@@ -348,7 +351,7 @@ public class MatchMusicDirector : MonoBehaviour
         CrossfadeToClip(battleTrackClip, false, MatchMusicState.BattleTrack, reason, PostBattleLoopVariant.None, positionSeconds);
     }
 
-    private void EnterPostBattleLoop(string reason)
+    private void EnterPostBattleLoop(string reason, PostBattleLoopVariant initialVariant)
     {
         if (postBattleLoopClipA == null || postBattleLoopClipB == null)
         {
@@ -360,13 +363,23 @@ public class MatchMusicDirector : MonoBehaviour
         postBattleLoopQueued = false;
         postBattleNextScheduled = false;
         queuedPostBattleVariant = PostBattleLoopVariant.None;
-        CrossfadeToClip(postBattleLoopClipB, false, MatchMusicState.PostBattleLoop, reason, PostBattleLoopVariant.B);
+        CrossfadeToClip(GetPostBattleClip(initialVariant), false, MatchMusicState.PostBattleLoop, reason, initialVariant);
     }
 
-    private void ContinueOrQueuePostBattleFlow(string reason)
+    private void ContinueOrQueuePostBattleFlow(string reason, bool battleEndedByTimer)
     {
         if (CurrentMusicState == MatchMusicState.PostBattleLoop)
         {
+            return;
+        }
+
+        PostBattleLoopVariant initialVariant = battleEndedByTimer
+            ? PostBattleLoopVariant.B
+            : GetInitialPostBattleVariant();
+
+        if (!battleEndedByTimer)
+        {
+            EnterPostBattleLoop(reason, initialVariant);
             return;
         }
 
@@ -375,11 +388,11 @@ public class MatchMusicDirector : MonoBehaviour
             activeSource.clip == battleTrackClip &&
             AudioSettings.dspTime < activeSourceEndDsp - seamToleranceSeconds)
         {
-            QueuePostBattleLoopAtBattleEnd(reason);
+            QueuePostBattleLoopAtBattleEnd(reason, initialVariant);
             return;
         }
 
-        EnterPostBattleLoop(reason);
+        EnterPostBattleLoop(reason, initialVariant);
     }
 
     private void CrossfadeToClip(
@@ -476,9 +489,10 @@ public class MatchMusicDirector : MonoBehaviour
         }
     }
 
-    private void QueuePostBattleLoopAtBattleEnd(string reason)
+    private void QueuePostBattleLoopAtBattleEnd(string reason, PostBattleLoopVariant initialVariant)
     {
-        if (postBattleLoopClipB == null || postBattleLoopQueued)
+        AudioClip initialClip = GetPostBattleClip(initialVariant);
+        if (initialClip == null || postBattleLoopQueued)
         {
             return;
         }
@@ -488,11 +502,11 @@ public class MatchMusicDirector : MonoBehaviour
             return;
         }
 
-        ConfigureSource(inactiveSource, postBattleLoopClipB, false);
+        ConfigureSource(inactiveSource, initialClip, false);
         scheduledInactiveStartDsp = activeSourceEndDsp;
         inactiveSource.PlayScheduled(scheduledInactiveStartDsp);
         postBattleLoopQueued = true;
-        queuedPostBattleVariant = PostBattleLoopVariant.B;
+        queuedPostBattleVariant = initialVariant;
         Debug.Log($"[MatchMusicDirector] Queued post-battle loop at battle seam | reason: {reason}");
     }
 
@@ -645,6 +659,7 @@ public class MatchMusicDirector : MonoBehaviour
     {
         LocalBattleStarted = false;
         LocalBattleEnded = false;
+        lastObservedBattlePhaseElapsedSeconds = 0f;
     }
 
     private bool TryGetAuthoritativeSetupMusicPosition(MatchRunner runner, out float targetPositionSeconds)
@@ -741,6 +756,28 @@ public class MatchMusicDirector : MonoBehaviour
             PostBattleLoopVariant.B => postBattleLoopClipB,
             _ => null,
         };
+    }
+
+    private static PostBattleLoopVariant GetInitialPostBattleVariant()
+    {
+        return PostBattleLoopVariant.A;
+    }
+
+    private bool DidLastBattleEndByTimer()
+    {
+        var runner = gameManager != null ? gameManager.MatchRunner : null;
+        if (runner == null)
+        {
+            return false;
+        }
+
+        float? battleDurationSeconds = runner.GetFixedPhaseDurationSeconds(Phase.Battle);
+        if (!battleDurationSeconds.HasValue)
+        {
+            return false;
+        }
+
+        return lastObservedBattlePhaseElapsedSeconds >= battleDurationSeconds.Value - Mathf.Max(0.01f, battleTimeoutDetectionLeewaySeconds);
     }
 
     private PostBattleLoopVariant GetNextPostBattleVariant(PostBattleLoopVariant current)
